@@ -14,12 +14,11 @@ pub async fn list_bids(
     State(state): State<AppState>,
     Path(job_id): Path<Uuid>,
 ) -> Result<Json<Vec<Bid>>> {
-    let bids = sqlx::query_as!(
-        Bid,
+    let bids = sqlx::query_as::<_, Bid>(
         r#"SELECT id, job_id, freelancer_address, proposal, proposal_hash, status, created_at
-           FROM bids WHERE job_id = $1 ORDER BY created_at ASC"#,
-        job_id
+           FROM bids WHERE job_id = $1 ORDER BY created_at ASC"#
     )
+    .bind(job_id)
     .fetch_all(&state.pool)
     .await?;
     Ok(Json(bids))
@@ -30,11 +29,9 @@ pub async fn create_bid(
     Path(job_id): Path<Uuid>,
     Json(req): Json<CreateBidRequest>,
 ) -> Result<Json<Bid>> {
-    // Validate job exists and is open
-    let job_status: Option<String> = sqlx::query_scalar!(
-        "SELECT status FROM jobs WHERE id = $1",
-        job_id
-    )
+    // ensure job is open
+    let job_status: Option<String> = sqlx::query_scalar("SELECT status FROM jobs WHERE id = $1")
+        .bind(job_id)
     .fetch_optional(&state.pool)
     .await?;
 
@@ -44,15 +41,14 @@ pub async fn create_bid(
         None => return Err(AppError::NotFound(format!("job {job_id} not found"))),
     }
 
-    let bid = sqlx::query_as!(
-        Bid,
+    let bid = sqlx::query_as::<_, Bid>(
         r#"INSERT INTO bids (job_id, freelancer_address, proposal, status)
            VALUES ($1, $2, $3, 'pending')
-           RETURNING id, job_id, freelancer_address, proposal, proposal_hash, status, created_at"#,
-        job_id,
-        req.freelancer_address,
-        req.proposal,
+           RETURNING id, job_id, freelancer_address, proposal, proposal_hash, status, created_at"#
     )
+    .bind(job_id)
+    .bind(req.freelancer_address)
+    .bind(req.proposal)
     .fetch_one(&state.pool)
     .await?;
     Ok(Json(bid))

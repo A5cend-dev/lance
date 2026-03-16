@@ -2,7 +2,7 @@
 //! TODO: See docs/ISSUES.md for full implementation spec.
 
 use anyhow::Result;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct JudgeVerdict {

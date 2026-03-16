@@ -1,4 +1,4 @@
-use axum::{Router, middleware};
+use axum::Router;
 use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;

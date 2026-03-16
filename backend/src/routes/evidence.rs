@@ -15,16 +15,15 @@ pub async fn submit_evidence(
     Path(dispute_id): Path<Uuid>,
     Json(req): Json<SubmitEvidenceRequest>,
 ) -> Result<Json<Evidence>> {
-    let evidence = sqlx::query_as!(
-        Evidence,
+    let evidence = sqlx::query_as::<_, Evidence>(
         r#"INSERT INTO evidence (dispute_id, submitted_by, content, file_hash)
            VALUES ($1, $2, $3, $4)
-           RETURNING id, dispute_id, submitted_by, content, file_hash, created_at"#,
-        dispute_id,
-        req.submitted_by,
-        req.content,
-        req.file_hash,
+           RETURNING id, dispute_id, submitted_by, content, file_hash, created_at"#
     )
+    .bind(dispute_id)
+    .bind(req.submitted_by)
+    .bind(req.content)
+    .bind(req.file_hash)
     .fetch_one(&state.pool)
     .await?;
     Ok(Json(evidence))

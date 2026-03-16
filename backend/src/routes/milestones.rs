@@ -1,6 +1,5 @@
 use axum::{
     extract::{Path, State},
-    http::StatusCode,
     Json,
 };
 use uuid::Uuid;
@@ -16,13 +15,12 @@ pub async fn release_milestone(
     Path((job_id, milestone_id)): Path<(Uuid, Uuid)>,
 ) -> Result<Json<Milestone>> {
     // Verify milestone belongs to job
-    let milestone = sqlx::query_as!(
-        Milestone,
+    let milestone = sqlx::query_as::<_, Milestone>(
         r#"SELECT id, job_id, index, title, amount_usdc, status, tx_hash, released_at
-           FROM milestones WHERE id = $1 AND job_id = $2"#,
-        milestone_id,
-        job_id,
+           FROM milestones WHERE id = $1 AND job_id = $2"#
     )
+    .bind(milestone_id)
+    .bind(job_id)
     .fetch_optional(&state.pool)
     .await?
     .ok_or_else(|| AppError::NotFound("milestone not found".into()))?;
@@ -33,14 +31,15 @@ pub async fn release_milestone(
 
     // TODO: call Soroban escrow contract via stellar.rs service
     // services::stellar::release_milestone(&job_id.to_string(), milestone.index).await?;
+    let tx_hash: Option<String> = None; // Placeholder for tx_hash from stellar.rs service
 
-    let updated = sqlx::query_as!(
-        Milestone,
-        r#"UPDATE milestones SET status = 'released', released_at = now()
-           WHERE id = $1
-           RETURNING id, job_id, index, title, amount_usdc, status, tx_hash, released_at"#,
-        milestone_id,
+    let updated = sqlx::query_as::<_, Milestone>(
+        r#"UPDATE milestones SET status = 'released', tx_hash = $1, released_at = CURRENT_TIMESTAMP
+           WHERE id = $2
+           RETURNING id, job_id, index, title, amount_usdc, status, tx_hash, released_at"#
     )
+    .bind(tx_hash)
+    .bind(milestone_id)
     .fetch_one(&state.pool)
     .await?;
 

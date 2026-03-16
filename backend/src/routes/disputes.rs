@@ -8,7 +8,7 @@ use uuid::Uuid;
 use crate::{
     db::AppState,
     error::{AppError, Result},
-    models::{Dispute, OpenDisputeRequest, Verdict},
+    models::{Dispute, OpenDisputeRequest},
     routes::evidence,
 };
 
@@ -26,10 +26,8 @@ pub async fn open_dispute_for_job(
     Json(req): Json<OpenDisputeRequest>,
 ) -> Result<Json<Dispute>> {
     // Verify job is in a disputable state
-    let status: Option<String> = sqlx::query_scalar!(
-        "SELECT status FROM jobs WHERE id = $1",
-        job_id
-    )
+    let status: Option<String> = sqlx::query_scalar("SELECT status FROM jobs WHERE id = $1")
+        .bind(job_id)
     .fetch_optional(&state.pool)
     .await?;
 
@@ -40,20 +38,20 @@ pub async fn open_dispute_for_job(
     }
 
     // Update job status
-    sqlx::query!("UPDATE jobs SET status = 'disputed' WHERE id = $1", job_id)
+    sqlx::query("UPDATE jobs SET status = 'disputed' WHERE id = $1")
+        .bind(job_id)
         .execute(&state.pool)
         .await?;
 
     // TODO: call escrow contract open_dispute via services::stellar
 
-    let dispute = sqlx::query_as!(
-        Dispute,
+    let dispute = sqlx::query_as::<_, Dispute>(
         r#"INSERT INTO disputes (job_id, opened_by, status)
            VALUES ($1, $2, 'open')
-           RETURNING id, job_id, opened_by, status, created_at"#,
-        job_id,
-        req.opened_by,
+           RETURNING id, job_id, opened_by, status, created_at"#
     )
+    .bind(job_id)
+    .bind(req.opened_by)
     .fetch_one(&state.pool)
     .await?;
 
@@ -64,11 +62,10 @@ async fn get_dispute(
     State(state): State<AppState>,
     Path(dispute_id): Path<Uuid>,
 ) -> Result<Json<Dispute>> {
-    let dispute = sqlx::query_as!(
-        Dispute,
-        "SELECT id, job_id, opened_by, status, created_at FROM disputes WHERE id = $1",
-        dispute_id
+    let dispute = sqlx::query_as::<_, Dispute>(
+        "SELECT id, job_id, opened_by, status, created_at FROM disputes WHERE id = $1"
     )
+    .bind(dispute_id)
     .fetch_optional(&state.pool)
     .await?
     .ok_or_else(|| AppError::NotFound(format!("dispute {dispute_id} not found")))?;
