@@ -279,7 +279,7 @@ impl EscrowContract {
             .instance()
             .get(&DataKey::Admin)
             .expect("not initialized");
-        adminequire_auth();
+        admin.require_auth();
 
         assert!(freelancer_share_bps <= 10_000, "bps out of range");
 
