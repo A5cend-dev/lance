@@ -773,6 +773,52 @@ mod test {
     // --- raise_dispute tests ---
 
     #[test]
+    fn test_exhaustive_release_funds_path() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let client = Address::generate(&env);
+        let freelancer = Address::generate(&env);
+
+        let token_addr = setup_token(&env, &admin);
+        mint(&env, &token_addr, &client);
+
+        let contract_id = env.register_contract(None, EscrowContract);
+        let cc = EscrowContractClient::new(&env, &contract_id);
+
+        cc.initialize(&admin);
+        
+        let total_amount = 10_000i128;
+        let num_milestones = 4u32;
+        cc.deposit(&1u64, &client, &freelancer, &token_addr, &total_amount, &num_milestones);
+
+        let tc = token::Client::new(&env, &token_addr);
+        assert_eq!(tc.balance(&contract_id), total_amount);
+        assert_eq!(tc.balance(&client), 90_000); // 100k - 10k
+
+        let per_milestone = total_amount / (num_milestones as i128);
+
+        // Release milestones one by one in arbitrary order
+        cc.release_funds(&1u64, &client, &2u32);
+        assert_eq!(tc.balance(&freelancer), per_milestone);
+        
+        cc.release_funds(&1u64, &client, &0u32);
+        assert_eq!(tc.balance(&freelancer), per_milestone * 2);
+
+        cc.release_funds(&1u64, &client, &3u32);
+        assert_eq!(tc.balance(&freelancer), per_milestone * 3);
+
+        cc.release_funds(&1u64, &client, &1u32);
+        
+        let job = cc.get_job(&1u64);
+        assert_eq!(job.status, EscrowStatus::Completed);
+        assert_eq!(tc.balance(&freelancer), total_amount);
+        assert_eq!(tc.balance(&contract_id), 0);
+        assert_eq!(tc.balance(&client), 90_000);
+    }
+
+    #[test]
     fn test_raise_dispute_by_client_locks_funds() {
         let env = Env::default();
         env.mock_all_auths();

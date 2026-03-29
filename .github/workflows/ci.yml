@@ -130,3 +130,32 @@ jobs:
       - run: npx playwright install --with-deps
       - run: npm run build --prefix apps/web
       - run: npm run test:e2e
+
+  # ── Deployment ──────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to Testnet
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development'
+    needs: [contracts-test, backend-test, e2e]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Install Stellar CLI
+        run: |
+          cargo install --locked stellar-cli --version 21.6.0
+      - name: Deploy Contracts
+        env:
+          STELLAR_ACCOUNT_SECRET: ${{ secrets.STELLAR_ACCOUNT_SECRET }}
+        run: |
+          ./.github/scripts/deploy-contracts.sh
+      - name: Deploy Backend
+        run: |
+          echo "🚀 Backend deployment logic (Fly.io/etc)..."
+          # fly deploy --prefix backend
+      - name: Deploy Frontend
+        run: |
+          echo "🚀 Frontend deployment logic (Vercel/etc)..."
+          # vercel deploy --prefix apps/web --prod
+
