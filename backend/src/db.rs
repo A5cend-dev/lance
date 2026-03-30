@@ -1,6 +1,6 @@
-use sqlx::PgPool;
 use crate::services::judge::JudgeService;
 use crate::services::stellar::StellarService;
+use sqlx::PgPool;
 
 #[derive(Clone)]
 pub struct AppState {

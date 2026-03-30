@@ -41,7 +41,7 @@ pub struct CaseFile {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct JudgeVerdict {
-    pub winner: String,           // "freelancer" | "client" | "split"
+    pub winner: String,            // "freelancer" | "client" | "split"
     pub freelancer_share_bps: i32, // 0–10000 basis points
     pub reasoning: String,
 }
@@ -70,7 +70,8 @@ impl OpenClawClient {
         let mut retry_count = 0;
 
         loop {
-            let response = self.client
+            let response = self
+                .client
                 .post(format!("{}/analyze", self.api_url))
                 .header("Authorization", format!("Bearer {}", self.api_key))
                 .json(&case_file)
@@ -81,13 +82,25 @@ impl OpenClawClient {
                 Ok(res) if res.status().is_success() => {
                     return Ok(res.json::<JudgeVerdict>().await?);
                 }
-                Ok(res) if (res.status().is_server_error() || res.status() == reqwest::StatusCode::TOO_MANY_REQUESTS) && retry_count < max_retries => {
-                    tracing::warn!("OpenClaw retryable error ({}): {}. Retrying...", retry_count + 1, res.status());
+                Ok(res)
+                    if (res.status().is_server_error()
+                        || res.status() == reqwest::StatusCode::TOO_MANY_REQUESTS)
+                        && retry_count < max_retries =>
+                {
+                    tracing::warn!(
+                        "OpenClaw retryable error ({}): {}. Retrying...",
+                        retry_count + 1,
+                        res.status()
+                    );
                     retry_count += 1;
                     sleep(Duration::from_secs(2u64.pow(retry_count))).await;
                 }
                 Err(e) if retry_count < max_retries => {
-                    tracing::warn!("OpenClaw connection error ({}): {}. Retrying...", retry_count + 1, e);
+                    tracing::warn!(
+                        "OpenClaw connection error ({}): {}. Retrying...",
+                        retry_count + 1,
+                        e
+                    );
                     retry_count += 1;
                     sleep(Duration::from_secs(2u64.pow(retry_count))).await;
                 }
@@ -95,7 +108,7 @@ impl OpenClawClient {
                     anyhow::bail!("OpenClaw API returned error status: {}", res.status());
                 }
                 Err(e) => {
-                    anyhow::bail!("OpenClaw request failed after retries: {}", e);
+                    anyhow::bail!("OpenClaw request failed after retries: {e}");
                 }
             }
         }
@@ -112,8 +125,7 @@ impl JudgeService {
     pub fn from_env() -> Self {
         let api_url = std::env::var("OPENCLAW_API_URL")
             .unwrap_or_else(|_| "https://api.openclaw.ai/v1".to_string());
-        let api_key = std::env::var("OPENCLAW_API_KEY")
-            .unwrap_or_else(|_| "dummy_key".to_string());
+        let api_key = std::env::var("OPENCLAW_API_KEY").unwrap_or_else(|_| "dummy_key".to_string());
 
         Self {
             openclaw: OpenClawClient::new(api_url, api_key),
@@ -136,24 +148,30 @@ impl JudgeService {
             .await
             .context("failed to fetch job for dispute")?;
 
-        let milestones: Vec<Milestone> = sqlx::query_as("SELECT * FROM milestones WHERE job_id = $1 ORDER BY index ASC")
-            .bind(job.id)
-            .fetch_all(pool)
-            .await
-            .context("failed to fetch milestones for job")?;
+        let milestones: Vec<Milestone> =
+            sqlx::query_as("SELECT * FROM milestones WHERE job_id = $1 ORDER BY index ASC")
+                .bind(job.id)
+                .fetch_all(pool)
+                .await
+                .context("failed to fetch milestones for job")?;
 
         // 3. Fetch Evidence
-        let evidence_list: Vec<Evidence> = sqlx::query_as("SELECT * FROM evidence WHERE dispute_id = $1 ORDER BY created_at ASC")
-            .bind(dispute_id)
-            .fetch_all(pool)
-            .await
-            .context("failed to fetch evidence for dispute")?;
+        let evidence_list: Vec<Evidence> =
+            sqlx::query_as("SELECT * FROM evidence WHERE dispute_id = $1 ORDER BY created_at ASC")
+                .bind(dispute_id)
+                .fetch_all(pool)
+                .await
+                .context("failed to fetch evidence for dispute")?;
 
         // 4. Bundle everything (including potential IPFS text fetching)
         let mut bundled_evidence = Vec::new();
         for ev in evidence_list {
             let file_content = if let Some(ref cid) = ev.file_hash {
-                Some(self.fetch_ipfs_text(cid).await.unwrap_or_else(|_| "Error fetching IPFS content".to_string()))
+                Some(
+                    self.fetch_ipfs_text(cid)
+                        .await
+                        .unwrap_or_else(|_| "Error fetching IPFS content".to_string()),
+                )
             } else {
                 None
             };
@@ -174,7 +192,10 @@ impl JudgeService {
                 title: job.title,
                 description: job.description,
                 budget_usdc: job.budget_usdc,
-                milestones: milestones.into_iter().map(|m| format!("{}: {}", m.title, m.amount_usdc)).collect(),
+                milestones: milestones
+                    .into_iter()
+                    .map(|m| format!("{}: {}", m.title, m.amount_usdc))
+                    .collect(),
             },
             evidence: bundled_evidence,
         })
@@ -183,13 +204,18 @@ impl JudgeService {
     /// Placeholder for fetching text content from IPFS.
     pub async fn fetch_ipfs_text(&self, cid: &str) -> Result<String> {
         tracing::debug!("Fetching IPFS content for CID: {}", cid);
-        Ok(format!("[Stub content for IPFS CID: {}]", cid))
+        Ok(format!("[Stub content for IPFS CID: {cid}]"))
     }
 
-    /// Core entry point for triggering a dispute analysis.
+    /// Core entry point for triggering a dispute analysis from a pre-bundled CaseFile.
+    pub async fn judge_case_file(&self, case_file: CaseFile) -> Result<JudgeVerdict> {
+        self.openclaw.analyze_dispute(case_file).await
+    }
+
+    /// Core entry point for triggering a dispute analysis by Uuid.
     pub async fn judge(&self, pool: &PgPool, dispute_id: Uuid) -> Result<JudgeVerdict> {
         let case_file = self.bundle_case_file(pool, dispute_id).await?;
-        self.openclaw.analyze_dispute(case_file).await
+        self.judge_case_file(case_file).await
     }
 }
 

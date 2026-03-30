@@ -9,11 +9,11 @@ pub struct Job {
     pub id: Uuid,
     pub title: String,
     pub description: String,
-    pub budget_usdc: i64,       // in micro-USDC (7 decimal places)
+    pub budget_usdc: i64, // in micro-USDC (7 decimal places)
     pub milestones: i32,
     pub client_address: String, // Stellar G… address
     pub freelancer_address: Option<String>,
-    pub status: String,         // open | awaiting_funding | funded | deliverable_submitted | completed | disputed
+    pub status: String, // open | awaiting_funding | funded | deliverable_submitted | completed | disputed
     pub metadata_hash: Option<String>, // IPFS CID
     pub on_chain_job_id: Option<i64>,
     pub created_at: DateTime<Utc>,
@@ -137,8 +137,8 @@ pub struct SubmitEvidenceRequest {
 pub struct Verdict {
     pub id: Uuid,
     pub dispute_id: Uuid,
-    pub winner: String,                 // "freelancer" | "client" | "split"
-    pub freelancer_share_bps: i32,      // 0–10000 basis points
+    pub winner: String,            // "freelancer" | "client" | "split"
+    pub freelancer_share_bps: i32, // 0–10000 basis points
     pub reasoning: String,
     pub on_chain_tx: Option<String>,
     pub created_at: DateTime<Utc>,

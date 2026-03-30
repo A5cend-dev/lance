@@ -10,7 +10,8 @@ use crate::{
     db::AppState,
     error::{AppError, Result},
     models::{
-        ProfileJobLedgerEntry, ProfileMetrics, PublicProfile, UpdateProfileRequest, UserProfileRecord,
+        ProfileJobLedgerEntry, ProfileMetrics, PublicProfile, UpdateProfileRequest,
+        UserProfileRecord,
     },
 };
 

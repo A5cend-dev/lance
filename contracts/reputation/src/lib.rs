@@ -1,6 +1,8 @@
 #![no_std]
 
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Bytes, Env, IntoVal, Symbol, Vec};
+use soroban_sdk::{
+    contract, contractimpl, contracttype, Address, Bytes, Env, IntoVal, Symbol, Vec,
+};
 
 // Types matching Job Registry contract's public types for cross-contract decoding
 #[contracttype]
@@ -25,7 +27,10 @@ pub struct JobRecord {
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
-pub enum Role { Client, Freelancer }
+pub enum Role {
+    Client,
+    Freelancer,
+}
 
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
@@ -42,7 +47,12 @@ pub struct ReputationScore {
 }
 
 #[contracttype]
-pub enum DataKey { Score(Address, Role), Admin, JobRegistry, Reviewed(u64, Address) }
+pub enum DataKey {
+    Score(Address, Role),
+    Admin,
+    JobRegistry,
+    Reviewed(u64, Address),
+}
 
 #[contract]
 pub struct ReputationContract;
@@ -59,7 +69,9 @@ impl ReputationContract {
     /// Set the JobRegistry contract address (admin only)
     pub fn set_job_registry(env: Env, admin: Address, registry: Address) {
         admin.require_auth();
-        env.storage().instance().set(&DataKey::JobRegistry, &registry);
+        env.storage()
+            .instance()
+            .set(&DataKey::JobRegistry, &registry);
     }
 
     /// Submit a rating for a target address tied to a Job ID. Caller must be the client or freelancer
@@ -97,7 +109,10 @@ impl ReputationContract {
 
         // prevent double review
         let reviewed_key = DataKey::Reviewed(job_id, caller.clone());
-        assert!(!env.storage().persistent().has(&reviewed_key), "already reviewed");
+        assert!(
+            !env.storage().persistent().has(&reviewed_key),
+            "already reviewed"
+        );
 
         // update reputation aggregates for target
         let mut rep = Self::get_score(env.clone(), target.clone(), Role::Freelancer);
@@ -132,9 +147,10 @@ impl ReputationContract {
         reputation.score = Self::clamp_score(reputation.score.saturating_add(delta));
         reputation.total_jobs = reputation.total_jobs.saturating_add(1);
 
-        env.storage()
-            .persistent()
-            .set(&DataKey::Score(reputation.address.clone(), role), &reputation);
+        env.storage().persistent().set(
+            &DataKey::Score(reputation.address.clone(), role),
+            &reputation,
+        );
     }
 
     /// Slash address for fraud / abandonment — reduces score by 20%.
@@ -149,9 +165,10 @@ impl ReputationContract {
         let mut reputation = Self::get_score(env.clone(), address, role.clone());
         reputation.score = Self::clamp_score(reputation.score.saturating_sub(2000));
 
-        env.storage()
-            .persistent()
-            .set(&DataKey::Score(reputation.address.clone(), role), &reputation);
+        env.storage().persistent().set(
+            &DataKey::Score(reputation.address.clone(), role),
+            &reputation,
+        );
     }
 
     pub fn get_score(env: Env, address: Address, role: Role) -> ReputationScore {
@@ -240,7 +257,11 @@ mod test {
         let client = ReputationContractClient::new(&env, &contract_id);
 
         client.initialize(&admin);
-        client.slash(&address, &Role::Client, &soroban_sdk::Symbol::new(&env, "fraud"));
+        client.slash(
+            &address,
+            &Role::Client,
+            &soroban_sdk::Symbol::new(&env, "fraud"),
+        );
 
         let score = client.get_score(&address, &Role::Client);
         assert_eq!(score.score, 3000); // 5000 - 2000

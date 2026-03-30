@@ -69,7 +69,9 @@ impl EscrowContract {
             panic!("already initialized");
         }
         env.storage().instance().set(&DataKey::Admin, &admin);
-        env.storage().instance().set(&DataKey::AgentJudge, &agent_judge);
+        env.storage()
+            .instance()
+            .set(&DataKey::AgentJudge, &agent_judge);
     }
 
     /// Admin can update the Agent Judge address.
@@ -80,7 +82,9 @@ impl EscrowContract {
             .get(&DataKey::Admin)
             .expect("not initialized");
         admin.require_auth();
-        env.storage().instance().set(&DataKey::AgentJudge, &new_agent_judge);
+        env.storage()
+            .instance()
+            .set(&DataKey::AgentJudge, &new_agent_judge);
     }
 
     /// Client creates a job entry in Setup phase.
@@ -133,7 +137,10 @@ impl EscrowContract {
         let key = DataKey::Job(job_id);
         let mut job: EscrowJob = env.storage().persistent().get(&key).expect("job not found");
         job.client.require_auth();
-        assert!(job.status == EscrowStatus::Setup, "already funded or invalid state");
+        assert!(
+            job.status == EscrowStatus::Setup,
+            "already funded or invalid state"
+        );
         assert!(amount > 0, "amount must be > 0");
         assert!(!job.milestones.is_empty(), "no milestones defined");
 
@@ -210,9 +217,15 @@ impl EscrowContract {
             "job not in releaseable state"
         );
         assert!(caller == job.client, "only client can release");
-        assert!(milestone_index < job.milestones.len(), "invalid milestone index");
+        assert!(
+            milestone_index < job.milestones.len(),
+            "invalid milestone index"
+        );
 
-        let mut milestone = job.milestones.get(milestone_index).expect("invalid milestone");
+        let mut milestone = job
+            .milestones
+            .get(milestone_index)
+            .expect("invalid milestone");
         assert!(
             milestone.status == MilestoneStatus::Pending,
             "milestone already released"
@@ -265,11 +278,7 @@ impl EscrowContract {
         caller.require_auth();
 
         let key = DataKey::Job(job_id);
-        let mut job: EscrowJob = env
-            .storage()
-            .persistent()
-            .get(&key)
-            .expect("job not found");
+        let mut job: EscrowJob = env.storage().persistent().get(&key).expect("job not found");
 
         // 2. Only client or freelancer may raise a dispute
         assert!(
@@ -351,11 +360,7 @@ impl EscrowContract {
             );
         }
         if payer_amount > 0 {
-            token_client.transfer(
-                &env.current_contract_address(),
-                &job.client,
-                &payer_amount,
-            );
+            token_client.transfer(&env.current_contract_address(), &job.client, &payer_amount);
         }
 
         job.released_amount += total_payout;
@@ -379,11 +384,7 @@ impl EscrowContract {
         let remaining = job.total_amount - job.released_amount;
         if remaining > 0 {
             let token_client = token::Client::new(&env, &job.token);
-            token_client.transfer(
-                &env.current_contract_address(),
-                &job.client,
-                &remaining,
-            );
+            token_client.transfer(&env.current_contract_address(), &job.client, &remaining);
         }
 
         job.released_amount = job.total_amount;
@@ -486,12 +487,12 @@ mod test {
 
         cc.initialize(&admin, &agent_judge);
         cc.create_job(&1u64, &client, &freelancer, &token_addr);
-        
+
         // 3 distinct milestones with different amounts
         cc.add_milestone(&1u64, &2000i128); // 20%
         cc.add_milestone(&1u64, &3000i128); // 30%
         cc.add_milestone(&1u64, &5000i128); // 50%
-        
+
         cc.deposit(&1u64, &10_000i128);
 
         let tc = token::Client::new(&env, &token_addr);
@@ -500,7 +501,7 @@ mod test {
         // Release first milestone
         cc.release_milestone(&1u64, &client);
         assert_eq!(tc.balance(&freelancer), 2000);
-        
+
         // Check milestone status
         let statuses = cc.get_milestone_status(&1u64);
         assert_eq!(statuses.get(0).unwrap(), MilestoneStatus::Released);
@@ -513,7 +514,7 @@ mod test {
         // Release third milestone
         cc.release_milestone(&1u64, &client);
         assert_eq!(tc.balance(&freelancer), 10_000);
-        
+
         let job = cc.get_job(&1u64);
         assert_eq!(job.status, EscrowStatus::Completed);
     }
@@ -621,7 +622,7 @@ mod test {
         cc.add_milestone(&1u64, &2500i128);
         cc.add_milestone(&1u64, &2500i128);
         cc.deposit(&1u64, &5000i128);
-        
+
         assert_eq!(
             token::Client::new(&env, &token_addr).balance(&client),
             95_000
@@ -716,7 +717,7 @@ mod test {
 
         cc.initialize(&admin, &agent_judge);
         cc.create_job(&1u64, &client, &freelancer, &token_addr);
-        
+
         let total_amount = 10_000i128;
         cc.add_milestone(&1u64, &2500i128);
         cc.add_milestone(&1u64, &2500i128);
@@ -730,7 +731,7 @@ mod test {
         // Release milestones one by one in arbitrary order
         cc.release_funds(&1u64, &client, &2u32);
         assert_eq!(tc.balance(&freelancer), 2500);
-        
+
         cc.release_funds(&1u64, &client, &0u32);
         assert_eq!(tc.balance(&freelancer), 5000);
 
@@ -738,7 +739,7 @@ mod test {
         assert_eq!(tc.balance(&freelancer), 7500);
 
         cc.release_funds(&1u64, &client, &1u32);
-        
+
         let job = cc.get_job(&1u64);
         assert_eq!(job.status, EscrowStatus::Completed);
         assert_eq!(tc.balance(&freelancer), total_amount);

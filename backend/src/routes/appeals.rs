@@ -9,14 +9,13 @@ use crate::{
     db::AppState,
     error::{AppError, Result},
     models::{
-        Appeal, ArbiterVote, CastVoteRequest, CreateAppealRequest,
-        APPEAL_BUDGET_THRESHOLD, APPEAL_QUORUM,
+        Appeal, ArbiterVote, CastVoteRequest, CreateAppealRequest, APPEAL_BUDGET_THRESHOLD,
+        APPEAL_QUORUM,
     },
 };
 
 pub fn router() -> Router<AppState> {
-    Router::new()
-        .route("/:id/vote", post(cast_vote))
+    Router::new().route("/:id/vote", post(cast_vote))
 }
 
 /// POST /disputes/:id/appeal
@@ -44,15 +43,13 @@ pub async fn create_appeal(
     }
 
     // 2. Check that the underlying job budget exceeds the appeal threshold
-    let budget: Option<i64> =
-        sqlx::query_scalar("SELECT budget_usdc FROM jobs WHERE id = $1")
-            .bind(dispute_row.job_id)
-            .fetch_optional(&state.pool)
-            .await?;
+    let budget: Option<i64> = sqlx::query_scalar("SELECT budget_usdc FROM jobs WHERE id = $1")
+        .bind(dispute_row.job_id)
+        .fetch_optional(&state.pool)
+        .await?;
 
-    let budget = budget.ok_or_else(|| {
-        AppError::NotFound(format!("job {} not found", dispute_row.job_id))
-    })?;
+    let budget = budget
+        .ok_or_else(|| AppError::NotFound(format!("job {} not found", dispute_row.job_id)))?;
 
     if budget < APPEAL_BUDGET_THRESHOLD {
         return Err(AppError::BadRequest(format!(
@@ -61,11 +58,10 @@ pub async fn create_appeal(
     }
 
     // 3. Ensure no existing appeal
-    let existing: Option<Uuid> =
-        sqlx::query_scalar("SELECT id FROM appeals WHERE dispute_id = $1")
-            .bind(dispute_id)
-            .fetch_optional(&state.pool)
-            .await?;
+    let existing: Option<Uuid> = sqlx::query_scalar("SELECT id FROM appeals WHERE dispute_id = $1")
+        .bind(dispute_id)
+        .fetch_optional(&state.pool)
+        .await?;
     if existing.is_some() {
         return Err(AppError::BadRequest(
             "an appeal already exists for this dispute".into(),
@@ -129,18 +125,15 @@ async fn cast_vote(
     }
 
     // 2. Verify the voter is an active arbiter
-    let is_arbiter: Option<bool> = sqlx::query_scalar(
-        "SELECT active FROM arbiters WHERE address = $1",
-    )
-    .bind(&req.arbiter_address)
-    .fetch_optional(&state.pool)
-    .await?;
+    let is_arbiter: Option<bool> =
+        sqlx::query_scalar("SELECT active FROM arbiters WHERE address = $1")
+            .bind(&req.arbiter_address)
+            .fetch_optional(&state.pool)
+            .await?;
 
     match is_arbiter {
         Some(true) => {}
-        Some(false) => {
-            return Err(AppError::BadRequest("arbiter is inactive".into()))
-        }
+        Some(false) => return Err(AppError::BadRequest("arbiter is inactive".into())),
         None => {
             return Err(AppError::BadRequest(
                 "address is not a registered arbiter".into(),

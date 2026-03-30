@@ -35,7 +35,7 @@ pub async fn submit_evidence(
     let evidence = sqlx::query_as::<_, Evidence>(
         r#"INSERT INTO evidence (dispute_id, submitted_by, content, file_hash)
            VALUES ($1, $2, $3, $4)
-           RETURNING id, dispute_id, submitted_by, content, file_hash, created_at"#
+           RETURNING id, dispute_id, submitted_by, content, file_hash, created_at"#,
     )
     .bind(dispute_id)
     .bind(req.submitted_by)

@@ -34,7 +34,7 @@ pub async fn release_milestone(
     // Verify milestone belongs to job
     let milestone = sqlx::query_as::<_, Milestone>(
         r#"SELECT id, job_id, index, title, amount_usdc, status, tx_hash, released_at
-           FROM milestones WHERE id = $1 AND job_id = $2"#
+           FROM milestones WHERE id = $1 AND job_id = $2"#,
     )
     .bind(milestone_id)
     .bind(job_id)
@@ -49,7 +49,10 @@ pub async fn release_milestone(
     // Call Soroban escrow contract via stellar.rs service
     // Use the on-chain job ID if it exists, otherwise use a placeholder (for dev/test)
     let job_id_str = milestone.job_id.to_string();
-    let tx_hash = state.stellar.release_milestone(&job_id_str, milestone.index).await
+    let tx_hash = state
+        .stellar
+        .release_milestone(&job_id_str, milestone.index)
+        .await
         .map(Some)
         .unwrap_or_else(|e| {
             tracing::error!("on-chain release_milestone failed: {e}");
@@ -73,14 +76,10 @@ pub async fn release_milestone(
         ));
     }
 
-    // TODO: call Soroban escrow contract via stellar.rs service
-    // services::stellar::release_milestone(&job_id.to_string(), milestone.index).await?;
-    let tx_hash: Option<String> = None; // Placeholder for tx_hash from stellar.rs service
-
     let updated = sqlx::query_as::<_, Milestone>(
         r#"UPDATE milestones SET status = 'released', tx_hash = $1, released_at = CURRENT_TIMESTAMP
            WHERE id = $2
-           RETURNING id, job_id, index, title, amount_usdc, status, tx_hash, released_at"#
+           RETURNING id, job_id, index, title, amount_usdc, status, tx_hash, released_at"#,
     )
     .bind(tx_hash)
     .bind(milestone_id)

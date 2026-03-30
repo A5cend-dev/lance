@@ -16,7 +16,7 @@ pub async fn list_bids(
 ) -> Result<Json<Vec<Bid>>> {
     let bids = sqlx::query_as::<_, Bid>(
         r#"SELECT id, job_id, freelancer_address, proposal, proposal_hash, status, created_at
-           FROM bids WHERE job_id = $1 ORDER BY created_at ASC"#
+           FROM bids WHERE job_id = $1 ORDER BY created_at ASC"#,
     )
     .bind(job_id)
     .fetch_all(&state.pool)
@@ -32,19 +32,23 @@ pub async fn create_bid(
     // ensure job is open
     let job_status: Option<String> = sqlx::query_scalar("SELECT status FROM jobs WHERE id = $1")
         .bind(job_id)
-    .fetch_optional(&state.pool)
-    .await?;
+        .fetch_optional(&state.pool)
+        .await?;
 
     match job_status.as_deref() {
         Some("open") => {}
-        Some(s) => return Err(AppError::BadRequest(format!("job status is '{s}', not open"))),
+        Some(s) => {
+            return Err(AppError::BadRequest(format!(
+                "job status is '{s}', not open"
+            )))
+        }
         None => return Err(AppError::NotFound(format!("job {job_id} not found"))),
     }
 
     let bid = sqlx::query_as::<_, Bid>(
         r#"INSERT INTO bids (job_id, freelancer_address, proposal, status)
            VALUES ($1, $2, $3, 'pending')
-           RETURNING id, job_id, freelancer_address, proposal, proposal_hash, status, created_at"#
+           RETURNING id, job_id, freelancer_address, proposal, proposal_hash, status, created_at"#,
     )
     .bind(job_id)
     .bind(req.freelancer_address)
@@ -59,12 +63,11 @@ pub async fn accept_bid(
     Path((job_id, bid_id)): Path<(Uuid, Uuid)>,
     Json(req): Json<AcceptBidRequest>,
 ) -> Result<Json<Job>> {
-    let client_address: Option<String> = sqlx::query_scalar(
-        "SELECT client_address FROM jobs WHERE id = $1 AND status = 'open'",
-    )
-    .bind(job_id)
-    .fetch_optional(&state.pool)
-    .await?;
+    let client_address: Option<String> =
+        sqlx::query_scalar("SELECT client_address FROM jobs WHERE id = $1 AND status = 'open'")
+            .bind(job_id)
+            .fetch_optional(&state.pool)
+            .await?;
 
     match client_address.as_deref() {
         Some(address) if address == req.client_address => {}

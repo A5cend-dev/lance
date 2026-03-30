@@ -10,8 +10,8 @@ pub mod uploads;
 pub mod users;
 pub mod verdicts;
 
-use axum::{routing::get, Router};
 use crate::db::AppState;
+use axum::{routing::get, Router};
 
 pub fn api_router() -> Router<AppState> {
     Router::new()

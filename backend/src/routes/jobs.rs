@@ -19,10 +19,20 @@ pub fn router() -> Router<AppState> {
         .route("/:id/fund", post(mark_job_funded))
         .route("/:id/bids", get(bids::list_bids).post(bids::create_bid))
         .route("/:id/bids/:bid_id/accept", post(bids::accept_bid))
-        .route("/:id/deliverables", get(deliverables::list_deliverables).post(deliverables::submit_deliverable))
-        .route("/:id/dispute", get(crate::routes::disputes::get_job_dispute).post(crate::routes::disputes::open_dispute_for_job))
+        .route(
+            "/:id/deliverables",
+            get(deliverables::list_deliverables).post(deliverables::submit_deliverable),
+        )
+        .route(
+            "/:id/dispute",
+            get(crate::routes::disputes::get_job_dispute)
+                .post(crate::routes::disputes::open_dispute_for_job),
+        )
         .route("/:id/milestones", get(milestones::list_milestones))
-        .route("/:id/milestones/:mid/release", post(milestones::release_milestone))
+        .route(
+            "/:id/milestones/:mid/release",
+            post(milestones::release_milestone),
+        )
 }
 
 async fn list_jobs(State(state): State<AppState>) -> Result<Json<Vec<Job>>> {
@@ -30,22 +40,19 @@ async fn list_jobs(State(state): State<AppState>) -> Result<Json<Vec<Job>>> {
         r#"SELECT id, title, description, budget_usdc, milestones, client_address,
                   freelancer_address, status, metadata_hash, on_chain_job_id,
                   created_at, updated_at
-           FROM jobs ORDER BY created_at DESC"#
+           FROM jobs ORDER BY created_at DESC"#,
     )
     .fetch_all(&state.pool)
     .await?;
     Ok(Json(jobs))
 }
 
-async fn get_job(
-    State(state): State<AppState>,
-    Path(id): Path<Uuid>,
-) -> Result<Json<Job>> {
+async fn get_job(State(state): State<AppState>, Path(id): Path<Uuid>) -> Result<Json<Job>> {
     let job = sqlx::query_as::<_, Job>(
         r#"SELECT id, title, description, budget_usdc, milestones, client_address,
                   freelancer_address, status, metadata_hash, on_chain_job_id,
                   created_at, updated_at
-           FROM jobs WHERE id = $1"#
+           FROM jobs WHERE id = $1"#,
     )
     .bind(id)
     .fetch_optional(&state.pool)
@@ -65,7 +72,9 @@ async fn create_job(
         return Err(AppError::BadRequest("milestones must be at least 1".into()));
     }
     if req.budget_usdc <= 0 {
-        return Err(AppError::BadRequest("budget must be greater than zero".into()));
+        return Err(AppError::BadRequest(
+            "budget must be greater than zero".into(),
+        ));
     }
 
     let mut tx = state.pool.begin().await?;
@@ -75,7 +84,7 @@ async fn create_job(
            VALUES ($1, $2, $3, $4, $5, 'open')
            RETURNING id, title, description, budget_usdc, milestones, client_address,
                      freelancer_address, status, metadata_hash, on_chain_job_id,
-                     created_at, updated_at"#
+                     created_at, updated_at"#,
     )
     .bind(req.title)
     .bind(req.description)
@@ -127,12 +136,19 @@ async fn mark_job_funded(
         .ok_or_else(|| AppError::NotFound(format!("job {job_id} not found")))?;
 
     if client_address != req.client_address {
-        return Err(AppError::BadRequest("only the client can mark a job as funded".into()));
+        return Err(AppError::BadRequest(
+            "only the client can mark a job as funded".into(),
+        ));
     }
     if freelancer_address.is_none() {
-        return Err(AppError::BadRequest("job must have an accepted freelancer first".into()));
+        return Err(AppError::BadRequest(
+            "job must have an accepted freelancer first".into(),
+        ));
     }
-    if !matches!(status.as_str(), "awaiting_funding" | "funded" | "in_progress") {
+    if !matches!(
+        status.as_str(),
+        "awaiting_funding" | "funded" | "in_progress"
+    ) {
         return Err(AppError::BadRequest(format!(
             "job status '{status}' cannot transition to funded"
         )));
@@ -144,7 +160,7 @@ async fn mark_job_funded(
            WHERE id = $1
            RETURNING id, title, description, budget_usdc, milestones, client_address,
                      freelancer_address, status, metadata_hash, on_chain_job_id,
-                     created_at, updated_at"#
+                     created_at, updated_at"#,
     )
     .bind(job_id)
     .fetch_one(&state.pool)
@@ -166,6 +182,6 @@ async fn mark_job_funded(
             .await?;
         }
     }
-    
+
     Ok(Json(job))
 }

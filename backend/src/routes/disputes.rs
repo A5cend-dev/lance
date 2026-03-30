@@ -15,7 +15,10 @@ use crate::{
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/:id", get(get_dispute))
-        .route("/:id/evidence", get(evidence::list_evidence).post(evidence::submit_evidence))
+        .route(
+            "/:id/evidence",
+            get(evidence::list_evidence).post(evidence::submit_evidence),
+        )
         .route("/:id/verdict", get(crate::routes::verdicts::get_verdict))
         .route("/:id/appeal", post(appeals::create_appeal))
 }
@@ -34,7 +37,11 @@ pub async fn open_dispute_for_job(
 
     match status.as_deref() {
         Some("funded") | Some("in_progress") | Some("deliverable_submitted") => {}
-        Some(s) => return Err(AppError::BadRequest(format!("cannot dispute job in status '{s}'"))),
+        Some(s) => {
+            return Err(AppError::BadRequest(format!(
+                "cannot dispute job in status '{s}'"
+            )))
+        }
         None => return Err(AppError::NotFound(format!("job {job_id} not found"))),
     }
 
@@ -47,9 +54,10 @@ pub async fn open_dispute_for_job(
     // Call escrow contract open_dispute via services::stellar
     let _ = state.stellar.open_dispute(&job_id.to_string()).await;
 
-    let dispute = sqlx::query_as::<_, Dispute>(        r#"INSERT INTO disputes (job_id, opened_by, status)
+    let dispute = sqlx::query_as::<_, Dispute>(
+        r#"INSERT INTO disputes (job_id, opened_by, status)
            VALUES ($1, $2, 'open')
-           RETURNING id, job_id, opened_by, status, created_at"#
+           RETURNING id, job_id, opened_by, status, created_at"#,
     )
     .bind(job_id)
     .bind(req.opened_by)
@@ -64,7 +72,7 @@ async fn get_dispute(
     Path(dispute_id): Path<Uuid>,
 ) -> Result<Json<Dispute>> {
     let dispute = sqlx::query_as::<_, Dispute>(
-        "SELECT id, job_id, opened_by, status, created_at FROM disputes WHERE id = $1"
+        "SELECT id, job_id, opened_by, status, created_at FROM disputes WHERE id = $1",
     )
     .bind(dispute_id)
     .fetch_optional(&state.pool)

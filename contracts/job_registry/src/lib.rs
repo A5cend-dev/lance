@@ -307,11 +307,14 @@ mod test {
 
         let client1 = Address::generate(&env);
         let client2 = Address::generate(&env);
-        let freelancrs: Vec<Address> = Vec::from_array(&env, [
-            Address::generate(&env),
-            Address::generate(&env),
-            Address::generate(&env),
-        ]);
+        let freelancrs: Vec<Address> = Vec::from_array(
+            &env,
+            [
+                Address::generate(&env),
+                Address::generate(&env),
+                Address::generate(&env),
+            ],
+        );
 
         let contract_id = env.register_contract(None, JobRegistryContract);
         let cc = JobRegistryContractClient::new(&env, &contract_id);
@@ -348,7 +351,7 @@ mod test {
         let hash = Bytes::from_slice(&env, b"QmHash");
         cc.post_job(&1u64, &client, &hash, &1000i128);
         cc.submit_bid(&1u64, &freelancer, &hash);
-        
+
         cc.accept_bid(&1u64, &rando, &freelancer);
     }
 
