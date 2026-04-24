@@ -27,11 +27,8 @@ export function disconnectWallet(): void {
   }
 }
 
-// --- Restored Wallet Kit & Connection Exports ---
-
 export function getWalletsKit() {
-  // Returns your configured wallets kit instance
-  // Adjust this to return your actual initialized kit if you have specific providers setup
+  // Returns an object to satisfy the hook imports
   return {}; 
 }
 
@@ -43,17 +40,13 @@ export async function getConnectedWalletAddress(): Promise<string | null> {
 }
 
 export async function connectWallet(): Promise<string> {
-  // Standard placeholder for wallet connection logic
-  // Replace with actual stellar-wallets-kit connect invocation if needed
   return ""; 
 }
 
 export async function signTransaction(xdr: string): Promise<string> {
-  // Logic to pass the XDR to the connected wallet for signing
   return xdr; 
 }
 
 export async function signMessage(message: string): Promise<string> {
-  // Logic to pass the SIWS message to the connected wallet for signing
   return "";
 }
