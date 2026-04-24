@@ -17,48 +17,42 @@ function truncate(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
-/**
- * Top-nav pill that shows the connected wallet provider's icon + truncated
- * address, or a "Connect wallet" CTA when no session is active. On mount it
- * restores provider metadata for a previously-selected wallet so the icon is
- * visible immediately after a page refresh.
- */
 export function WalletConnectButton() {
-  const info = useWalletStore((state) => state.info);
-  const setWallet = useWalletStore((state) => state.setWallet);
+  const address = useWalletStore((state) => state.address);
+  const walletId = useWalletStore((state) => state.walletId);
+  const setConnection = useWalletStore((state) => state.setConnection);
+  const [walletName, setWalletName] = useState<string | null>(null);
+  const [walletIcon, setWalletIcon] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
 
   useEffect(() => {
-    if (info) return;
-    const walletId = getSelectedWalletId();
-    if (!walletId) return;
-
+    if (address && walletId) return;
+    const storedId = getSelectedWalletId();
+    if (!storedId) return;
     let cancelled = false;
     (async () => {
-      const [address, meta] = await Promise.all([
+      const [connectedAddress, meta] = await Promise.all([
         getConnectedWalletAddress(),
-        getWalletInfo(walletId),
+        getWalletInfo(storedId),
       ]);
-      if (cancelled || !address || !meta) return;
-      setWallet({
-        address,
-        walletId: meta.id,
-        walletName: meta.name,
-        walletIcon: meta.icon,
-      });
+      if (cancelled || !connectedAddress || !meta) return;
+      setConnection(connectedAddress, meta.id);
+      setWalletName(meta.name);
+      setWalletIcon(meta.icon);
     })();
-
     return () => {
       cancelled = true;
     };
-  }, [info, setWallet]);
+  }, [address, walletId, setConnection]);
 
   async function handleConnect() {
     if (connecting) return;
     setConnecting(true);
     try {
       const wallet = await connectWalletWithInfo();
-      setWallet(wallet);
+      setConnection(wallet.address, wallet.walletId);
+      setWalletName(wallet.walletName);
+      setWalletIcon(wallet.walletIcon);
     } catch {
       // User dismissed modal or extension errored; silent fail keeps UI stable.
     } finally {
@@ -66,21 +60,19 @@ export function WalletConnectButton() {
     }
   }
 
-  if (info) {
+  if (address) {
     return (
       <div
         className="hidden items-center gap-2 rounded-full border border-border/70 bg-card/70 px-3 py-1.5 text-sm md:flex"
-        aria-label={`Connected to ${info.walletName}`}
+        aria-label={`Connected to ${walletName ?? walletId}`}
       >
         <WalletProviderIcon
-          walletName={info.walletName}
-          walletIcon={info.walletIcon}
+          walletName={walletName ?? undefined}
+          walletIcon={walletIcon ?? undefined}
           size={18}
         />
-        <span className="font-medium text-foreground">{info.walletName}</span>
-        <span className="text-xs text-muted-foreground">
-          {truncate(info.address)}
-        </span>
+        <span className="font-medium text-foreground">{walletName ?? walletId}</span>
+        <span className="text-xs text-muted-foreground">{truncate(address)}</span>
       </div>
     );
   }
