@@ -113,7 +113,7 @@ function extractSimulationLog(sim: Api.SimulateTransactionResponse): SimulationL
   // SimulateTransactionSuccessResponse carries transactionData (SorobanDataBuilder)
   // and minResourceFee. The cost field is not in the parsed type but may appear
   // on the raw response — we access it defensively.
-  const asAny = sim as Record<string, unknown>;
+  const asAny = (sim as unknown) as Record<string, unknown>;
   const cost = asAny["cost"] as { cpuInsns?: string; memBytes?: string } | undefined;
   const minFee =
     "minResourceFee" in sim
