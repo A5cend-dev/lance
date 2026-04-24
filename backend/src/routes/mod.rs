@@ -1,5 +1,5 @@
-pub mod auth;
 pub mod appeals;
+pub mod auth;
 pub mod bids;
 pub mod deliverables;
 pub mod disputes;

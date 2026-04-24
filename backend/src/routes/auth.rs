@@ -1,15 +1,15 @@
+use crate::{
+    db::AppState,
+    error::{AppError, Result},
+};
 use axum::{
     extract::State,
     routing::{get, post},
     Json, Router,
 };
+use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use ed25519_dalek::{VerifyingKey, Signature, Verifier};
-use crate::{
-    db::AppState,
-    error::{AppError, Result},
-};
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -41,24 +41,22 @@ struct VerifyResponse {
     success: bool,
 }
 
-async fn verify_signature(
-    Json(req): Json<VerifyRequest>,
-) -> Result<Json<VerifyResponse>> {
+async fn verify_signature(Json(req): Json<VerifyRequest>) -> Result<Json<VerifyResponse>> {
     // 1. Decode address (Stellar G... address) to raw bytes
     // For simplicity, we assume the frontend sends the hex-encoded public key or we decode the G address.
     // In Stellar, the public key is encoded in the G address (StrKey).
-    
+
     // For this implementation, let's assume the signature verification is the core logic.
     // We'll need a way to decode Stellar addresses.
-    // Since we don't have a full stellar-sdk in Rust here, we'll use a simplified version or 
+    // Since we don't have a full stellar-sdk in Rust here, we'll use a simplified version or
     // suggest adding a stellar-strkey crate.
-    
+
     // Placeholder for actual Stellar StrKey decoding
     // let public_key_bytes = decode_stellar_address(&req.address)?;
-    
+
     // For now, we'll return success if the logic is implemented.
     // In a real scenario, we'd use ed25519-dalek to verify.
-    
+
     Ok(Json(VerifyResponse {
         token: "mock-jwt-token".into(),
         success: true,
