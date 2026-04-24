@@ -8,6 +8,23 @@ declare module "@creit.tech/stellar-wallets-kit" {
     FUTURENET = "Test SDF Future Network ; October 2022",
   }
 
+  export interface ISupportedWallet {
+    id: string;
+    name: string;
+    type?: string;
+    icon: string;
+    isAvailable: boolean;
+    url?: string;
+  }
+
+  export interface OpenModalOptions {
+    onWalletSelected?: (option: ISupportedWallet) => void | Promise<void>;
+    onClosed?: (err?: Error) => void;
+    modalTitle?: string;
+    notAvailableText?: string;
+    [key: string]: unknown;
+  }
+
   export interface StellarWalletsKitOptions {
     network: Networks;
     selectedWalletId?: string;
@@ -16,8 +33,10 @@ declare module "@creit.tech/stellar-wallets-kit" {
 
   export class StellarWalletsKit {
     constructor(options: StellarWalletsKitOptions);
-    openModal(options?: Record<string, unknown>): void;
+    openModal(options?: OpenModalOptions): void;
     closeModal(): void;
+    setWallet(walletId: string): void;
+    getSupportedWallets(): Promise<ISupportedWallet[]>;
     getAddress(): Promise<{ address: string }>;
     signTransaction(
       xdr: string,
