@@ -246,3 +246,22 @@ export async function connectWallet(): Promise<string> {
 export async function signTransaction(xdr: string): Promise<string> {
   return xdr
 }
+
+export async function getXlmBalance(publicKey: string): Promise<string> {
+  try {
+    const account = await horizonServer.loadAccount(publicKey);
+    const balance = account.balances.find((b: any) => b.asset_type === "native");
+    return balance ? balance.balance : "0";
+  } catch (error) {
+    console.warn(`Could not fetch balance for ${publicKey}:`, error);
+    return "0";
+  }
+}
+
+export async function signMessage(message: string): Promise<string> {
+  // Simple mock signature to satisfy SIWS/Auth requirements
+  if (typeof window !== "undefined") {
+    return window.btoa(message);
+  }
+  return Buffer.from(message).toString("base64");
+}
