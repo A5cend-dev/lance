@@ -38,32 +38,30 @@ export function useWalletAuth() {
     setHydrated(true);
   }, [setJwt, setHydrated]);
 
-  // Check network matches expected on mount
-  useEffect(() => {
-    void checkNetwork();
-  }, []);
-
   const checkNetwork = useCallback(async () => {
     try {
       const kit = getWalletsKit();
+      if (!kit || typeof kit.getNetwork !== "function") return;
       const info = await kit.getNetwork();
       const mismatch = info.network !== EXPECTED_NETWORK;
       setNetworkMismatch(mismatch);
     } catch {
-      // Wallet not connected yet, no mismatch to report
       setNetworkMismatch(false);
     }
   }, [setNetworkMismatch]);
+
+  // Check network matches expected on mount
+  useEffect(() => {
+    void checkNetwork();
+  }, [checkNetwork]);
 
   const connect = useCallback(async () => {
     try {
       const address = await connectWallet();
       setWalletAddress(address);
 
-      // Check network immediately after connect
       await checkNetwork();
 
-      // Exchange wallet address for JWT via SIWS
       const { token } = await api.auth.getChallenge(address);
       sessionStorage.setItem(JWT_SESSION_KEY, token);
       jwtMemory.set(token);
