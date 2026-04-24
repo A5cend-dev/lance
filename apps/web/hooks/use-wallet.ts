@@ -64,7 +64,7 @@ export function useWallet() {
 
     // Register listeners
     registerWalletListeners(
-      (newAddress) => {
+      (newAddress: string | undefined) => {
         if (newAddress) {
           setConnection(newAddress, walletId as string);
           toast.info("Account switched in wallet");
@@ -72,7 +72,7 @@ export function useWallet() {
           disconnect();
         }
       },
-      (newNetwork) => {
+      (newNetwork: string) => {
         if (newNetwork !== appNetwork) {
           toast.warning(`Network switched to ${newNetwork}. Expected ${appNetwork}.`);
         }
