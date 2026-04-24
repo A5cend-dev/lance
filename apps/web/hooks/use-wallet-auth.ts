@@ -50,10 +50,24 @@ export function useWalletAuth() {
     }
   }, [setNetworkMismatch]);
 
-  // Check network matches expected on mount
+  // Check network on mount
   useEffect(() => {
     void checkNetwork();
   }, [checkNetwork]);
+
+  // Poll for account changes every 3s as StellarWalletsKit v2
+  // does not expose an event emitter API
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      const address = await getConnectedWalletAddress();
+      if (address && address !== walletAddress) {
+        setWalletAddress(address);
+        await checkNetwork();
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [walletAddress, setWalletAddress, checkNetwork]);
 
   const connect = useCallback(async () => {
     try {
@@ -79,25 +93,6 @@ export function useWalletAuth() {
     jwtMemory.clear();
     logout();
   }, [logout]);
-
-  // Listen for account switches from the wallet extension
-  useEffect(() => {
-    const kit = getWalletsKit();
-    if (!kit || typeof kit.on !== "function") return;
-
-    const handler = async () => {
-      const address = await getConnectedWalletAddress();
-      if (address && address !== walletAddress) {
-        setWalletAddress(address);
-        await checkNetwork();
-      }
-    };
-
-    kit.on("accountChanged", handler);
-    return () => {
-      kit.off?.("accountChanged", handler);
-    };
-  }, [walletAddress, setWalletAddress, checkNetwork]);
 
   return {
     walletAddress,
