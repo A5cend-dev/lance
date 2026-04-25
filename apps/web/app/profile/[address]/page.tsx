@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
@@ -48,7 +48,6 @@ import {
 } from "@/lib/format";
 import { getReputationView } from "@/lib/reputation";
 import { connectWallet, getConnectedWalletAddress } from "@/lib/stellar";
-import { ExplorerLink } from "@/components/ui/explorer-link";
 
 const TABS: Array<{ id: ProfileTabId; label: string }> = [
   { id: "overview", label: "Overview" },
@@ -77,7 +76,6 @@ function PublicProfileWorkspace({ address }: { address: string }) {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ProfileTabId>("overview");
   const [editing, setEditing] = useState(false);
-  const [formValues, setFormValues] = useState<ProfileFormValues>(EMPTY_FORM);
   const [formErrors, setFormErrors] = useState<ProfileFormErrors>({});
 
   const viewerQuery = useQuery({
@@ -100,12 +98,9 @@ function PublicProfileWorkspace({ address }: { address: string }) {
     staleTime: 300_000,
   });
 
-  useEffect(() => {
-    if (profileQuery.data) {
-      setFormValues(createProfileFormValues(profileQuery.data));
-      setFormErrors({});
-    }
-  }, [profileQuery.data]);
+  const [formValues, setFormValues] = useState<ProfileFormValues>(() =>
+    profileQuery.data ? createProfileFormValues(profileQuery.data) : EMPTY_FORM
+  );
 
   const connectWalletMutation = useMutation({
     mutationFn: connectWallet,
@@ -330,7 +325,7 @@ function PublicProfileWorkspace({ address }: { address: string }) {
                       />
                     ) : (
                       profile.portfolio_links.map((link) => (
-                        <a
+                        
                           key={link}
                           href={link}
                           target="_blank"
