@@ -92,7 +92,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 2000
                   }
                 }
               ]
@@ -142,7 +142,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 5000
                   }
                 }
               ]
@@ -167,7 +167,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 9000
+                    "lo": 10000
                   }
                 }
               ]
@@ -189,7 +189,7 @@
                     {
                       "i128": {
                         "hi": 0,
-                        "lo": 9000
+                        "lo": 10000
                       }
                     }
                   ]
@@ -201,6 +201,29 @@
         }
       ]
     ],
+    [
+      [
+        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
+        {
+          "function": {
+            "contract_fn": {
+              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4",
+              "function_name": "release_milestone",
+              "args": [
+                {
+                  "u64": 1
+                },
+                {
+                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                }
+              ]
+            }
+          },
+          "sub_invocations": []
+        }
+      ]
+    ],
+    [],
     [],
     [
       [
@@ -225,28 +248,6 @@
       ]
     ],
     [],
-    [
-      [
-        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M",
-        {
-          "function": {
-            "contract_fn": {
-              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4",
-              "function_name": "release_milestone",
-              "args": [
-                {
-                  "u64": 1
-                },
-                {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
-                }
-              ]
-            }
-          },
-          "sub_invocations": []
-        }
-      ]
-    ],
     [],
     [
       [
@@ -270,7 +271,6 @@
         }
       ]
     ],
-    [],
     [],
     []
   ],
@@ -726,7 +726,7 @@
                                 "val": {
                                   "i128": {
                                     "hi": 0,
-                                    "lo": 3000
+                                    "lo": 2000
                                   }
                                 }
                               },
@@ -780,7 +780,7 @@
                                 "val": {
                                   "i128": {
                                     "hi": 0,
-                                    "lo": 3000
+                                    "lo": 5000
                                   }
                                 }
                               },
@@ -808,7 +808,7 @@
                       "val": {
                         "i128": {
                           "hi": 0,
-                          "lo": 9000
+                          "lo": 10000
                         }
                       }
                     },
@@ -839,7 +839,7 @@
                       "val": {
                         "i128": {
                           "hi": 0,
-                          "lo": 9000
+                          "lo": 10000
                         }
                       }
                     }
@@ -953,7 +953,7 @@
                       "val": {
                         "i128": {
                           "hi": 0,
-                          "lo": 91000
+                          "lo": 90000
                         }
                       }
                     },
@@ -1026,7 +1026,7 @@
                       "val": {
                         "i128": {
                           "hi": 0,
-                          "lo": 9000
+                          "lo": 10000
                         }
                       }
                     },
@@ -1709,7 +1709,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 2000
                   }
                 }
               ]
@@ -1742,7 +1742,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 2000
                   }
                 }
               ]
@@ -1889,7 +1889,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 5000
                   }
                 }
               ]
@@ -1922,7 +1922,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 5000
                   }
                 }
               ]
@@ -1979,7 +1979,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 9000
+                    "lo": 10000
                   }
                 }
               ]
@@ -2018,7 +2018,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 9000
+                    "lo": 10000
                   }
                 }
               ]
@@ -2052,7 +2052,7 @@
             "data": {
               "i128": {
                 "hi": 0,
-                "lo": 9000
+                "lo": 10000
               }
             }
           }
@@ -2104,7 +2104,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 9000
+                    "lo": 10000
                   }
                 }
               ]
@@ -2138,7 +2138,7 @@
                   "val": {
                     "i128": {
                       "hi": 0,
-                      "lo": 9000
+                      "lo": 10000
                     }
                   }
                 },
@@ -2181,58 +2181,6 @@
               }
             ],
             "data": "void"
-          }
-        }
-      },
-      "failed_call": false
-    },
-    {
-      "event": {
-        "ext": "v0",
-        "contract_id": null,
-        "type_": "diagnostic",
-        "body": {
-          "v0": {
-            "topics": [
-              {
-                "symbol": "fn_call"
-              },
-              {
-                "bytes": "d63a954726751a876d37290072af1ee723d7d761eec3bf4191849d2116acdc73"
-              },
-              {
-                "symbol": "balance"
-              }
-            ],
-            "data": {
-              "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
-            }
-          }
-        }
-      },
-      "failed_call": false
-    },
-    {
-      "event": {
-        "ext": "v0",
-        "contract_id": "d63a954726751a876d37290072af1ee723d7d761eec3bf4191849d2116acdc73",
-        "type_": "diagnostic",
-        "body": {
-          "v0": {
-            "topics": [
-              {
-                "symbol": "fn_return"
-              },
-              {
-                "symbol": "balance"
-              }
-            ],
-            "data": {
-              "i128": {
-                "hi": 0,
-                "lo": 9000
-              }
-            }
           }
         }
       },
@@ -2300,7 +2248,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 2000
                   }
                 }
               ]
@@ -2334,7 +2282,7 @@
             "data": {
               "i128": {
                 "hi": 0,
-                "lo": 3000
+                "lo": 2000
               }
             }
           }
@@ -2386,7 +2334,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 2000
                   }
                 }
               ]
@@ -2422,7 +2370,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 2000
                   }
                 },
                 {
@@ -2451,6 +2399,220 @@
               }
             ],
             "data": "void"
+          }
+        }
+      },
+      "failed_call": false
+    },
+    {
+      "event": {
+        "ext": "v0",
+        "contract_id": null,
+        "type_": "diagnostic",
+        "body": {
+          "v0": {
+            "topics": [
+              {
+                "symbol": "fn_call"
+              },
+              {
+                "bytes": "0000000000000000000000000000000000000000000000000000000000000006"
+              },
+              {
+                "symbol": "get_job"
+              }
+            ],
+            "data": {
+              "u64": 1
+            }
+          }
+        }
+      },
+      "failed_call": false
+    },
+    {
+      "event": {
+        "ext": "v0",
+        "contract_id": "0000000000000000000000000000000000000000000000000000000000000006",
+        "type_": "diagnostic",
+        "body": {
+          "v0": {
+            "topics": [
+              {
+                "symbol": "fn_return"
+              },
+              {
+                "symbol": "get_job"
+              }
+            ],
+            "data": {
+              "map": [
+                {
+                  "key": {
+                    "symbol": "client"
+                  },
+                  "val": {
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "created_at"
+                  },
+                  "val": {
+                    "u64": 0
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "expires_at"
+                  },
+                  "val": {
+                    "u64": 2592000
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "freelancer"
+                  },
+                  "val": {
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "milestones"
+                  },
+                  "val": {
+                    "vec": [
+                      {
+                        "map": [
+                          {
+                            "key": {
+                              "symbol": "amount"
+                            },
+                            "val": {
+                              "i128": {
+                                "hi": 0,
+                                "lo": 2000
+                              }
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "status"
+                            },
+                            "val": {
+                              "vec": [
+                                {
+                                  "symbol": "Released"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "map": [
+                          {
+                            "key": {
+                              "symbol": "amount"
+                            },
+                            "val": {
+                              "i128": {
+                                "hi": 0,
+                                "lo": 3000
+                              }
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "status"
+                            },
+                            "val": {
+                              "vec": [
+                                {
+                                  "symbol": "Pending"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "map": [
+                          {
+                            "key": {
+                              "symbol": "amount"
+                            },
+                            "val": {
+                              "i128": {
+                                "hi": 0,
+                                "lo": 5000
+                              }
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "status"
+                            },
+                            "val": {
+                              "vec": [
+                                {
+                                  "symbol": "Pending"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "released_amount"
+                  },
+                  "val": {
+                    "i128": {
+                      "hi": 0,
+                      "lo": 2000
+                    }
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "status"
+                  },
+                  "val": {
+                    "vec": [
+                      {
+                        "symbol": "WorkInProgress"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "token"
+                  },
+                  "val": {
+                    "address": "CDLDVFKHEZ2RVB3NG4UQA4VPD3TSHV6XMHXMHP2BSGCJ2IIWVTOHGDSG"
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "total_amount"
+                  },
+                  "val": {
+                    "i128": {
+                      "hi": 0,
+                      "lo": 10000
+                    }
+                  }
+                }
+              ]
+            }
           }
         }
       },
@@ -2500,7 +2662,7 @@
             "data": {
               "i128": {
                 "hi": 0,
-                "lo": 3000
+                "lo": 2000
               }
             }
           }
@@ -2738,6 +2900,220 @@
                 "symbol": "fn_call"
               },
               {
+                "bytes": "0000000000000000000000000000000000000000000000000000000000000006"
+              },
+              {
+                "symbol": "get_job"
+              }
+            ],
+            "data": {
+              "u64": 1
+            }
+          }
+        }
+      },
+      "failed_call": false
+    },
+    {
+      "event": {
+        "ext": "v0",
+        "contract_id": "0000000000000000000000000000000000000000000000000000000000000006",
+        "type_": "diagnostic",
+        "body": {
+          "v0": {
+            "topics": [
+              {
+                "symbol": "fn_return"
+              },
+              {
+                "symbol": "get_job"
+              }
+            ],
+            "data": {
+              "map": [
+                {
+                  "key": {
+                    "symbol": "client"
+                  },
+                  "val": {
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "created_at"
+                  },
+                  "val": {
+                    "u64": 0
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "expires_at"
+                  },
+                  "val": {
+                    "u64": 2592000
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "freelancer"
+                  },
+                  "val": {
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "milestones"
+                  },
+                  "val": {
+                    "vec": [
+                      {
+                        "map": [
+                          {
+                            "key": {
+                              "symbol": "amount"
+                            },
+                            "val": {
+                              "i128": {
+                                "hi": 0,
+                                "lo": 2000
+                              }
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "status"
+                            },
+                            "val": {
+                              "vec": [
+                                {
+                                  "symbol": "Released"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "map": [
+                          {
+                            "key": {
+                              "symbol": "amount"
+                            },
+                            "val": {
+                              "i128": {
+                                "hi": 0,
+                                "lo": 3000
+                              }
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "status"
+                            },
+                            "val": {
+                              "vec": [
+                                {
+                                  "symbol": "Released"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "map": [
+                          {
+                            "key": {
+                              "symbol": "amount"
+                            },
+                            "val": {
+                              "i128": {
+                                "hi": 0,
+                                "lo": 5000
+                              }
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "status"
+                            },
+                            "val": {
+                              "vec": [
+                                {
+                                  "symbol": "Pending"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "released_amount"
+                  },
+                  "val": {
+                    "i128": {
+                      "hi": 0,
+                      "lo": 5000
+                    }
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "status"
+                  },
+                  "val": {
+                    "vec": [
+                      {
+                        "symbol": "WorkInProgress"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "token"
+                  },
+                  "val": {
+                    "address": "CDLDVFKHEZ2RVB3NG4UQA4VPD3TSHV6XMHXMHP2BSGCJ2IIWVTOHGDSG"
+                  }
+                },
+                {
+                  "key": {
+                    "symbol": "total_amount"
+                  },
+                  "val": {
+                    "i128": {
+                      "hi": 0,
+                      "lo": 10000
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "failed_call": false
+    },
+    {
+      "event": {
+        "ext": "v0",
+        "contract_id": null,
+        "type_": "diagnostic",
+        "body": {
+          "v0": {
+            "topics": [
+              {
+                "symbol": "fn_call"
+              },
+              {
                 "bytes": "d63a954726751a876d37290072af1ee723d7d761eec3bf4191849d2116acdc73"
               },
               {
@@ -2770,7 +3146,7 @@
             "data": {
               "i128": {
                 "hi": 0,
-                "lo": 6000
+                "lo": 5000
               }
             }
           }
@@ -2840,7 +3216,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 5000
                   }
                 }
               ]
@@ -2874,7 +3250,7 @@
             "data": {
               "i128": {
                 "hi": 0,
-                "lo": 3000
+                "lo": 5000
               }
             }
           }
@@ -2926,7 +3302,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 5000
                   }
                 }
               ]
@@ -2962,7 +3338,7 @@
                 {
                   "i128": {
                     "hi": 0,
-                    "lo": 3000
+                    "lo": 5000
                   }
                 },
                 {
@@ -3086,7 +3462,7 @@
                             "val": {
                               "i128": {
                                 "hi": 0,
-                                "lo": 3000
+                                "lo": 2000
                               }
                             }
                           },
@@ -3140,7 +3516,7 @@
                             "val": {
                               "i128": {
                                 "hi": 0,
-                                "lo": 3000
+                                "lo": 5000
                               }
                             }
                           },
@@ -3168,7 +3544,7 @@
                   "val": {
                     "i128": {
                       "hi": 0,
-                      "lo": 9000
+                      "lo": 10000
                     }
                   }
                 },
@@ -3199,7 +3575,7 @@
                   "val": {
                     "i128": {
                       "hi": 0,
-                      "lo": 9000
+                      "lo": 10000
                     }
                   }
                 }
@@ -3254,59 +3630,7 @@
             "data": {
               "i128": {
                 "hi": 0,
-                "lo": 9000
-              }
-            }
-          }
-        }
-      },
-      "failed_call": false
-    },
-    {
-      "event": {
-        "ext": "v0",
-        "contract_id": null,
-        "type_": "diagnostic",
-        "body": {
-          "v0": {
-            "topics": [
-              {
-                "symbol": "fn_call"
-              },
-              {
-                "bytes": "d63a954726751a876d37290072af1ee723d7d761eec3bf4191849d2116acdc73"
-              },
-              {
-                "symbol": "balance"
-              }
-            ],
-            "data": {
-              "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4"
-            }
-          }
-        }
-      },
-      "failed_call": false
-    },
-    {
-      "event": {
-        "ext": "v0",
-        "contract_id": "d63a954726751a876d37290072af1ee723d7d761eec3bf4191849d2116acdc73",
-        "type_": "diagnostic",
-        "body": {
-          "v0": {
-            "topics": [
-              {
-                "symbol": "fn_return"
-              },
-              {
-                "symbol": "balance"
-              }
-            ],
-            "data": {
-              "i128": {
-                "hi": 0,
-                "lo": 0
+                "lo": 10000
               }
             }
           }

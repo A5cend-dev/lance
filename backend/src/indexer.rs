@@ -280,8 +280,21 @@ mod tests {
     #[tokio::test]
     async fn test_get_latest_ledger_recovery() {
         let mock_server = MockServer::start().await;
+        let client = Client::new();
+        let rpc_url = mock_server.uri();
 
-        // Success mock (mount first, will be used after retry)
+        {
+            // Mount a mock that fails. Mount it as scoped so it's removed after this block.
+            let _guard = Mock::given(method("POST"))
+                .respond_with(ResponseTemplate::new(500))
+                .mount_as_scoped(&mock_server)
+                .await;
+
+            let result = get_latest_ledger(&client, &rpc_url).await;
+            assert!(result.is_err());
+        }
+
+        // Mount a mock that succeeds.
         Mock::given(method("POST"))
             .respond_with(ResponseTemplate::new(200).set_body_json(json!({
                 "jsonrpc": "2.0",
@@ -291,21 +304,6 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        // Failure mock (mount last, will be used first)
-        Mock::given(method("POST"))
-            .respond_with(ResponseTemplate::new(500))
-            .up_to_n_times(1)
-            .mount(&mock_server)
-            .await;
-
-        let client = Client::new();
-        let rpc_url = mock_server.uri();
-
-        // 1. Should fail
-        let result = get_latest_ledger(&client, &rpc_url).await;
-        assert!(result.is_err());
-
-        // 2. Should succeed on retry (simulated here by calling again)
         let result = get_latest_ledger(&client, &rpc_url).await;
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), 12345);
