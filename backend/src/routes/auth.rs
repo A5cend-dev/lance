@@ -1,8 +1,5 @@
-use axum::{
-    extract::State,
-    routing::{get, post},
-    Json, Router,
-};
+use axum::{extract::State, routing::post, Json, Router};
+use base64::Engine;
 use chrono::{Duration, Utc};
 use ed25519_dalek::{Signature, Verifier, VerifyingKey};
 use uuid::Uuid;
@@ -10,20 +7,23 @@ use uuid::Uuid;
 use crate::{
     db::AppState,
     error::{AppError, Result},
-    models::{AuthChallengeResponse, AuthVerifyRequest, AuthVerifyResponse},
+    models::{AuthChallengeRequest, AuthChallengeResponse, AuthVerifyRequest, AuthVerifyResponse},
     services::stellar::{base32_decode, crc16_xmodem},
 };
 
 pub fn router() -> Router<AppState> {
     Router::new()
-        .route("/challenge", get(get_challenge))
+        .route("/challenge", post(get_challenge))
         .route("/verify", post(verify_signature))
 }
 
-async fn get_challenge(State(state): State<AppState>, Json(address): Json<String>) -> Result<Json<AuthChallengeResponse>> {
+async fn get_challenge(
+    State(state): State<AppState>,
+    Json(req): Json<AuthChallengeRequest>,
+) -> Result<Json<AuthChallengeResponse>> {
     let challenge = format!(
         "Lance wants you to sign in with your Stellar account:\n{}\n\nNonce: {}",
-        address,
+        req.address,
         Uuid::new_v4()
     );
 
@@ -34,13 +34,16 @@ async fn get_challenge(State(state): State<AppState>, Json(address): Json<String
          VALUES ($1, $2, $3) 
          ON CONFLICT (address) DO UPDATE SET challenge = EXCLUDED.challenge, expires_at = EXCLUDED.expires_at"
     )
-    .bind(&address)
+    .bind(&req.address)
     .bind(&challenge)
     .bind(expires_at)
     .execute(&state.pool)
     .await?;
 
-    Ok(Json(AuthChallengeResponse { address, challenge }))
+    Ok(Json(AuthChallengeResponse {
+        address: req.address,
+        challenge,
+    }))
 }
 
 async fn verify_signature(
@@ -57,7 +60,11 @@ async fn verify_signature(
 
     let challenge = match challenge_row {
         Some(row) if row.expires_at > Utc::now() => row.challenge,
-        _ => return Err(AppError::BadRequest("Challenge expired or not found".into())),
+        _ => {
+            return Err(AppError::BadRequest(
+                "Challenge expired or not found".into(),
+            ))
+        }
     };
 
     // 2. Verify signature
@@ -80,14 +87,12 @@ async fn verify_signature(
     let token = Uuid::new_v4().to_string();
     let expires_at = Utc::now() + Duration::days(7);
 
-    sqlx::query(
-        "INSERT INTO sessions (token, address, expires_at) VALUES ($1, $2, $3)"
-    )
-    .bind(&token)
-    .bind(&req.address)
-    .bind(expires_at)
-    .execute(&state.pool)
-    .await?;
+    sqlx::query("INSERT INTO sessions (token, address, expires_at) VALUES ($1, $2, $3)")
+        .bind(&token)
+        .bind(&req.address)
+        .bind(expires_at)
+        .execute(&state.pool)
+        .await?;
 
     // 4. Cleanup challenge
     sqlx::query("DELETE FROM auth_challenges WHERE address = $1")
@@ -103,7 +108,8 @@ async fn verify_signature(
 
 /// Helper to decode Stellar G... address to 32 bytes public key
 fn decode_stellar_public_key(address: &str) -> Result<[u8; 32]> {
-    let decoded = base32_decode(address).ok_or_else(|| AppError::BadRequest("Invalid base32".into()))?;
+    let decoded =
+        base32_decode(address).ok_or_else(|| AppError::BadRequest("Invalid base32".into()))?;
     if decoded.len() != 35 {
         return Err(AppError::BadRequest("Invalid address length".into()));
     }

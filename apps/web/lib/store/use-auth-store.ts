@@ -7,8 +7,8 @@ export interface AuthUser {
   name: string;
   email: string;
   avatar?: string;
-  address: string;
-  token: string;
+  address?: string;
+  token?: string;
 }
 
 interface AuthState {
@@ -28,6 +28,16 @@ interface AuthState {
   setNetworkMismatch: (mismatch: boolean) => void;
 }
 
+export const jwtMemory = {
+  value: null as string | null,
+  set(token: string | null) {
+    this.value = token;
+  },
+  get() {
+    return this.value;
+  },
+};
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -35,6 +45,9 @@ export const useAuthStore = create<AuthState>()(
       isLoggedIn: false,
       user: null,
       hydrated: false,
+      walletAddress: null,
+      jwt: null,
+      networkMismatch: false,
       setHydrated: (value) => set({ hydrated: value }),
       setRole: (role) =>
         set((state) => ({
@@ -46,8 +59,6 @@ export const useAuthStore = create<AuthState>()(
               : state.user ?? {
                   name: role === "client" ? "Amina O." : "Tolu A.",
                   email: role === "client" ? "client@lance.so" : "freelancer@lance.so",
-                  address: "",
-                  token: "",
                 },
         })),
       login: (user, role) =>
@@ -55,13 +66,24 @@ export const useAuthStore = create<AuthState>()(
           isLoggedIn: true,
           user,
           role,
+          walletAddress: user.address ?? null,
+          jwt: user.token ?? null,
         }),
       logout: () =>
         set({
           isLoggedIn: false,
           user: null,
           role: "logged-out",
+          walletAddress: null,
+          jwt: null,
+          networkMismatch: false,
         }),
+      setWalletAddress: (address) => set({ walletAddress: address }),
+      setJwt: (token) => {
+        jwtMemory.set(token);
+        set({ jwt: token });
+      },
+      setNetworkMismatch: (mismatch) => set({ networkMismatch: mismatch }),
     }),
     {
       name: "lance-auth-session",

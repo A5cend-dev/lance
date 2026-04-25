@@ -62,7 +62,7 @@ fn build_router(state: AppState) -> Router {
     let limiter = middleware::build_limiter();
 
     Router::new()
-        .nest("/api", routes::api_router())
+        .nest("/api", routes::api_router(state.clone()))
         .layer(middleware::RateLimitLayer::new(limiter))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())

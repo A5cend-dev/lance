@@ -1,41 +1,45 @@
 import { useState, useCallback, useEffect } from "react";
-import { 
-  StellarWalletsKit, 
-  WalletNetwork, 
-  allowAll, 
-  FreighterModule, 
-  AlbedoModule, 
-  XBullModule 
-} from "@creit.tech/stellar-wallets-kit";
+import { Networks } from "@stellar/stellar-sdk";
 import { useAuthStore } from "@/lib/store/use-auth-store";
+import { api } from "@/lib/api";
+import {
+  APP_STELLAR_NETWORK,
+  connectWallet,
+  getWalletNetwork,
+  getWalletsKit,
+} from "@/lib/stellar";
 import { toast } from "sonner";
 
-// Initialize the kit
-const kit = new StellarWalletsKit({
-  network: WalletNetwork.TESTNET,
-  modules: [
-    new FreighterModule(),
-    new AlbedoModule(),
-    new XBullModule(),
-  ],
-});
+type WalletDisplayNetwork = "MAINNET" | "TESTNET";
+
+function toDisplayNetwork(network: typeof APP_STELLAR_NETWORK): WalletDisplayNetwork {
+  return network === "public" ? "MAINNET" : "TESTNET";
+}
 
 export function useWallet() {
   const { login, logout, user, isLoggedIn } = useAuthStore();
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [network, setDisplayNetwork] = useState<WalletDisplayNetwork>(
+    toDisplayNetwork(APP_STELLAR_NETWORK),
+  );
+  const address = user?.address;
+  const isConnected = isLoggedIn && Boolean(address);
+  const status = isConnecting
+    ? "connecting"
+    : isConnected
+      ? "connected"
+      : "disconnected";
 
   const connect = useCallback(async () => {
     setIsConnecting(true);
     try {
       // 1. Get address and network from wallet
-      const { address } = await kit.getAddress();
-      const walletNetwork = await kit.getNetwork();
+      const kit = getWalletsKit();
+      const address = await connectWallet();
+      const walletNetwork = getWalletNetwork();
       
-      const expectedNetwork = process.env.NEXT_PUBLIC_STELLAR_NETWORK?.toUpperCase() || "TESTNET";
-      
-      if (walletNetwork !== walletNetwork) { // This is a placeholder for actual comparison logic if needed
-          // Actually kit.getNetwork() returns the network name
-      }
+      const expectedNetwork = APP_STELLAR_NETWORK.toUpperCase();
 
       if (walletNetwork.toUpperCase() !== expectedNetwork) {
         toast.warning(`Network Mismatch: App is on ${expectedNetwork} but wallet is on ${walletNetwork}`, {
@@ -44,30 +48,13 @@ export function useWallet() {
       }
 
       // 2. Fetch challenge from backend
-      const challengeResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/challenge`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(address),
-      });
-      
-      if (!challengeResp.ok) throw new Error("Failed to fetch auth challenge");
-      const { challenge } = await challengeResp.json();
+      const { challenge } = await api.auth.getChallenge(address);
 
       // 3. Sign challenge
-      const { result: signature } = await kit.signAuthEntry({
-        entry: challenge,
-        address,
-      });
+      const signature = await kit.signMessage(challenge);
 
       // 4. Verify signature on backend
-      const verifyResp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address, signature }),
-      });
-
-      if (!verifyResp.ok) throw new Error("Signature verification failed");
-      const { token } = await verifyResp.json();
+      const { token } = await api.auth.verify(address, signature);
 
       // 5. Update store
       login(
@@ -81,11 +68,12 @@ export function useWallet() {
       );
 
       toast.success("Wallet connected successfully");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Wallet connection error:", error);
-      toast.error(error.message || "Failed to connect wallet");
+      toast.error(error instanceof Error ? error.message : "Failed to connect wallet");
     } finally {
       setIsConnecting(false);
+      setIsModalOpen(false);
     }
   }, [login]);
 
@@ -95,12 +83,13 @@ export function useWallet() {
 
     const interval = setInterval(async () => {
       try {
+        const kit = getWalletsKit();
         const { address: currentAddress } = await kit.getAddress();
         if (currentAddress !== address) {
           logout();
           toast.info("Account switched in wallet. Please reconnect.");
         }
-      } catch (e) {
+      } catch {
         // Wallet might be locked or disconnected
       }
     }, 3000);
@@ -110,8 +99,16 @@ export function useWallet() {
 
   const disconnect = useCallback(() => {
     logout();
+    setIsModalOpen(false);
     toast.info("Wallet disconnected");
   }, [logout]);
+
+  const setNetwork = useCallback((newNetwork: WalletDisplayNetwork) => {
+    const stellarNetwork =
+      newNetwork === "MAINNET" ? Networks.PUBLIC : Networks.TESTNET;
+    getWalletsKit().setNetwork(stellarNetwork);
+    setDisplayNetwork(newNetwork);
+  }, []);
 
   return {
     connect,
@@ -119,5 +116,11 @@ export function useWallet() {
     isConnecting,
     isLoggedIn,
     address: user?.address,
+    status,
+    isConnected,
+    isModalOpen,
+    setIsModalOpen,
+    network,
+    setNetwork,
   };
 }

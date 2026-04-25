@@ -1,8 +1,8 @@
 use axum::{
     extract::{Request, State},
+    http::StatusCode,
     middleware::Next,
     response::Response,
-    http::StatusCode,
 };
 use chrono::Utc;
 
@@ -18,8 +18,8 @@ pub async fn auth_middleware(
         .get("Authorization")
         .and_then(|h| h.to_str().ok());
 
-    let token = match auth_header {
-        Some(h) if h.starts_with("Bearer ") => &h[7..],
+    let token = match auth_header.and_then(|header| header.strip_prefix("Bearer ")) {
+        Some(token) => token,
         _ => return Err(StatusCode::UNAUTHORIZED),
     };
 

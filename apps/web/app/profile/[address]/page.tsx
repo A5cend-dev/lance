@@ -100,7 +100,7 @@ export default function PublicProfilePage() {
     setSaving(true);
 
     try {
-      const updated = await api.users.updateProfile(address, address, {
+      const updated = await api.users.updateProfile(address, {
         display_name: displayName || undefined,
         headline,
         bio,

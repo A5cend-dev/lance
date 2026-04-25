@@ -239,6 +239,11 @@ pub struct CastVoteRequest {
 // ── Auth ──────────────────────────────────────────────────────────────────────
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct AuthChallengeRequest {
+    pub address: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AuthChallengeResponse {
     pub address: String,
     pub challenge: String,

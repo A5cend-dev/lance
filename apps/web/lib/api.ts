@@ -1,5 +1,3 @@
-import { jwtMemory } from "@/lib/store/use-auth-store";
-
 const API =
   process.env.NEXT_PUBLIC_API_URL ??
   (process.env.NEXT_PUBLIC_E2E === "true" ? "" : "http://localhost:3001");
@@ -36,9 +34,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   auth: {
     getChallenge: (address: string) =>
-      request<{ token: string }>(`/v1/auth/challenge`, {
+      request<AuthChallengeResponse>(`/v1/auth/challenge`, {
         method: "POST",
         body: JSON.stringify({ address }),
+      }),
+    verify: (address: string, signature: string) =>
+      request<AuthVerifyResponse>(`/v1/auth/verify`, {
+        method: "POST",
+        body: JSON.stringify({ address, signature }),
       }),
   },
   jobs: {
@@ -271,4 +274,14 @@ export interface UpdateProfileBody {
   headline: string;
   bio: string;
   portfolio_links: string[];
+}
+
+export interface AuthChallengeResponse {
+  address: string;
+  challenge: string;
+}
+
+export interface AuthVerifyResponse {
+  address: string;
+  token: string;
 }

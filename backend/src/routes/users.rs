@@ -1,11 +1,10 @@
 use axum::{
+    extract::Extension,
     extract::{Path, State},
-    http::HeaderMap,
+    handler::Handler,
+    middleware,
     routing::get,
     Json, Router,
-    middleware,
-    extract::Extension,
-    handler::Handler,
 };
 use chrono::Utc;
 
@@ -18,18 +17,14 @@ use crate::{
     },
 };
 
-pub fn router() -> Router<AppState> {
-    Router::new()
-        .route("/", get(list_users))
-        .route(
-            "/:address/profile",
-            get(get_profile).put(
-                upsert_profile.layer(middleware::from_fn_with_state(
-                    state.clone(),
-                    crate::services::auth::auth_middleware,
-                )),
-            ),
-        )
+pub fn router(state: AppState) -> Router<AppState> {
+    Router::new().route("/", get(list_users)).route(
+        "/:address/profile",
+        get(get_profile).put(upsert_profile.layer(middleware::from_fn_with_state(
+            state.clone(),
+            crate::services::auth::auth_middleware,
+        ))),
+    )
 }
 
 async fn list_users(State(state): State<AppState>) -> Result<Json<Vec<String>>> {
@@ -162,7 +157,6 @@ async fn upsert_profile(
     Extension(actor): Extension<String>,
     Json(req): Json<UpdateProfileRequest>,
 ) -> Result<Json<PublicProfile>> {
-
     if actor != address {
         return Err(AppError::BadRequest(
             "only the wallet owner can update this profile".into(),
