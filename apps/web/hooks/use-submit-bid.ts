@@ -9,7 +9,7 @@ import {
   type LifecycleListener,
 } from "@/lib/job-registry";
 import { useTxStatusStore } from "@/lib/store/use-tx-status-store";
-import { useTransactionToast } from "@/components/transaction/use-transaction-toast";
+import { useTransactionToast } from "@/hooks/use-transaction-toast";
 
 /**
  * Hook to manage the lifecycle of submitting a bid to the job registry.
