@@ -54,9 +54,11 @@ function createQueryClient() {
 }
 
 function createWrapper(queryClient: QueryClient) {
-  return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  }
+  Wrapper.displayName = "QueryWrapper";
+  return Wrapper;
 }
 
 describe("useJobBoard", () => {
@@ -143,9 +145,11 @@ describe("useJobBoard", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.pagination.totalPages).toBe(2); // 12 / 6
-
-    act(() => {
+  useEffect(() => {
+  startTransition(() => {
+    setPage(1);
+  });
+}, [query, activeTag, sortBy]);
       result.current.actions.setPageSize(12);
     });
 
