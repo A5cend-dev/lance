@@ -143,8 +143,10 @@ export function useJobBoard(options: UseJobBoardOptions = {}) {
     retry: 1,
   });
 
-  useEffect(() => {
-    setPage(1);
+ useEffect(() => {
+    startTransition(() => {
+      setPage(1);
+    });
   }, [query, activeTag, sortBy]);
 
   const availableTags = useMemo(() => {
