@@ -7,6 +7,8 @@ export interface IndexerStatus {
   last_processed_ledger: number;
   last_updated_at: string;
   error_count: number;
+  total_events_processed: number;
+  last_loop_duration_ms: number;
   latest_network_ledger: number;
   ledger_lag: number;
   rpc: {
