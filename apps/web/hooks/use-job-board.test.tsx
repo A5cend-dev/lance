@@ -1,6 +1,6 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { vi, describe, it, expect, beforeEach, beforeAll } from "vitest";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 import { useJobBoard } from "@/hooks/use-job-board";
 import { api } from "@/lib/api";
 import { getReputationMetrics } from "@/lib/reputation";
@@ -77,14 +77,11 @@ describe("useJobBoard", () => {
       wrapper: createWrapper(queryClient),
     });
 
-    // Initially loading
     expect(result.current.loading).toBe(true);
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // Full jobs list (open only) should be 12
     expect(result.current.jobs).toHaveLength(12);
-    // Paginated jobs default pageSize 6
     expect(result.current.paginatedJobs).toHaveLength(6);
     expect(result.current.pagination.page).toBe(1);
     expect(result.current.pagination.pageSize).toBe(6);
@@ -105,7 +102,7 @@ describe("useJobBoard", () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     expect(result.current.error).toBe("Network error");
-    expect(result.current.jobs.length).toBeGreaterThan(0); // mock data
+    expect(result.current.jobs.length).toBeGreaterThan(0);
   });
 
   it("pagination: changes page updates visible jobs", async () => {
@@ -118,11 +115,9 @@ describe("useJobBoard", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // Page 1 jobs are first 6
     expect(result.current.paginatedJobs).toHaveLength(6);
     expect(result.current.paginatedJobs[0].id).toBe("job-1");
 
-    // Change to page 2
     act(() => {
       result.current.actions.setPage(2);
     });
@@ -145,7 +140,9 @@ describe("useJobBoard", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
+    expect(result.current.pagination.totalPages).toBe(2);
 
+    act(() => {
       result.current.actions.setPageSize(12);
     });
 
@@ -167,16 +164,13 @@ describe("useJobBoard", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // Initially page 1
     expect(result.current.pagination.page).toBe(1);
 
-    // Navigate to page 2
     act(() => {
       result.current.actions.setPage(2);
     });
     await waitFor(() => expect(result.current.pagination.page).toBe(2));
 
-    // Apply a tag filter
     act(() => {
       result.current.actions.setActiveTag("frontend");
     });
@@ -211,7 +205,7 @@ describe("useJobBoard", () => {
   });
 
   it("page number clamping when beyond totalPages", async () => {
-    (api.jobs.list as vi.Mock).mockResolvedValue(mockJobs.slice(0, 2)); // only 2 jobs
+    (api.jobs.list as vi.Mock).mockResolvedValue(mockJobs.slice(0, 2));
     (getReputationMetrics as vi.Mock).mockResolvedValue(mockReputation);
 
     const { result } = renderHook(() => useJobBoard({ defaultPageSize: 6 }), {
@@ -222,7 +216,6 @@ describe("useJobBoard", () => {
 
     expect(result.current.pagination.totalPages).toBe(1);
 
-    // Try to set page beyond
     act(() => {
       result.current.actions.setPage(5);
     });
@@ -242,13 +235,11 @@ describe("useJobBoard", () => {
 
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    // Go to page 2
     act(() => {
       result.current.actions.setPage(2);
     });
     await waitFor(() => expect(result.current.pagination.page).toBe(2));
 
-    // Change sort; should reset page to 1
     act(() => {
       result.current.actions.setSortBy("budget");
     });
