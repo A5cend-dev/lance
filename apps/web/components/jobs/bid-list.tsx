@@ -201,6 +201,7 @@ export function BidList({
             {canAccept && !isAccepted && (
               <div className="mt-4 flex justify-end">
                 <Button
+                  data-testid="accept-bid-button"
                   size="sm"
                   onClick={() => onAccept?.(bid.id)}
                   disabled={isAccepting || Boolean(acceptingBidId)}
