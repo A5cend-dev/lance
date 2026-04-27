@@ -65,7 +65,7 @@ describe("acceptBid", () => {
       bidId: 1n,
     };
 
-    let lifecycleSteps: string[] = [];
+    const lifecycleSteps: string[] = [];
     const onStep: LifecycleListener = (step) => {
       lifecycleSteps.push(step);
     };

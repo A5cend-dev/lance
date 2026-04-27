@@ -584,7 +584,7 @@ async fn process_event_side_effects(
                 .get("contractId")
                 .and_then(Value::as_str)
                 .unwrap_or_default();
-            
+
             // Topic[1] typically contains the job_id
             let job_id = topics
                 .and_then(|items| items.get(1))
@@ -592,7 +592,7 @@ async fn process_event_side_effects(
                 .unwrap_or("0")
                 .parse::<i64>()
                 .unwrap_or(0);
-            
+
             // Topic[2] typically contains the opened_by address
             let opened_by = topics
                 .and_then(|items| items.get(2))
@@ -602,11 +602,7 @@ async fn process_event_side_effects(
 
             info!(
                 event_id,
-                ledger,
-                contract_id,
-                job_id,
-                opened_by,
-                "indexed DisputeOpened event",
+                ledger, contract_id, job_id, opened_by, "indexed DisputeOpened event",
             );
 
             // Insert DisputeOpened event record for tracking
