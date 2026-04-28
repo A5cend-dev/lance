@@ -2,6 +2,7 @@ const API =
   process.env.NEXT_PUBLIC_API_URL ??
   (process.env.NEXT_PUBLIC_E2E === "true" ? "" : "http://localhost:3001");
 import { useAuthStore } from "./store/use-auth-store";
+import type { ReputationMetrics } from "./reputation";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = useAuthStore.getState().user?.token;
@@ -132,6 +133,43 @@ export const api = {
         method: "PUT",
         body: JSON.stringify(body),
       }),
+  },
+};
+
+export const apiAdmin = {
+  indexer: {
+    restart: () =>
+      request<{ ok: boolean; message: string }>("/v1/admin/indexer/restart", {
+        method: "POST",
+      }),
+    rescan: (fromLedger?: number) =>
+      request<{ ok: boolean; rescan_from_ledger: number }>("/v1/admin/indexer/rescan", {
+        method: "POST",
+        body: JSON.stringify({ from_ledger: fromLedger }),
+      }),
+  },
+};
+
+export const apiActivity = {
+  list: ({
+    jobId,
+    userAddress,
+    limit,
+    offset,
+  }: {
+    jobId?: string;
+    userAddress?: string;
+    limit?: number;
+    offset?: number;
+  } = {}) => {
+    const params = new URLSearchParams();
+    if (jobId) params.set("job_id", jobId);
+    if (userAddress) params.set("user_address", userAddress);
+    if (limit !== undefined) params.set("limit", String(limit));
+    if (offset !== undefined) params.set("offset", String(offset));
+
+    const query = params.toString();
+    return request<ActivityLog[]>(`/v1/activity/logs${query ? `?${query}` : ""}`);
   },
 };
 
@@ -319,6 +357,16 @@ export interface UpdateProfileBody {
   headline: string;
   bio: string;
   portfolio_links: string[];
+}
+
+export interface ActivityLog {
+  id: string;
+  user_address?: string | null;
+  job_id?: string | null;
+  event_type: string;
+  level: string;
+  details: Record<string, unknown> | string | null;
+  created_at: string;
 }
 
 export interface AuthChallengeResponse {

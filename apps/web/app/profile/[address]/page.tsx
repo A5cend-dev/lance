@@ -115,7 +115,7 @@ function PublicProfileWorkspace({ address }: { address: string }) {
 
   const saveProfileMutation = useMutation({
     mutationFn: (payload: UpdateProfileBody) =>
-      api.users.updateProfile(address, viewerQuery.data ?? address, payload),
+      api.users.updateProfile(address, payload),
     onSuccess: (updatedProfile) => {
       queryClient.setQueryData(["profile", address], updatedProfile);
       setFormValues(createProfileFormValues(updatedProfile));
