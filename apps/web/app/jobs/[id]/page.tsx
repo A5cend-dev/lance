@@ -468,10 +468,11 @@ export default function JobDetailsPage() {
                       id="deliverable-file"
                     />
                   </form>
+                ) : null}
                 </div>
               </section>
             </div>
-          ) : null}
+          </div>
         </div>
       </section>
     </SiteShell>
