@@ -49,9 +49,11 @@ pub async fn create_bid(
     if req.proposal.trim().is_empty() {
         return Err(AppError::BadRequest("proposal cannot be empty".into()));
     }
-    
+
     if req.proposal.len() > 5000 {
-        return Err(AppError::BadRequest("proposal is too long (maximum 5000 characters)".into()));
+        return Err(AppError::BadRequest(
+            "proposal is too long (maximum 5000 characters)".into(),
+        ));
     }
 
     let bid = sqlx::query_as::<_, Bid>(
