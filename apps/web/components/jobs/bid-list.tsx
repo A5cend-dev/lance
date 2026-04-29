@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, Clock3, Loader2, UserCircle2 } from "lucide-react";
+import { CheckCircle2, Clock3, Loader2, UserCircle2, AlertCircle } from "lucide-react";
 import { type Bid, type Job } from "@/lib/api";
 import { shortenAddress, formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
-import { AcceptBidFlow } from "./accept-bid-flow";
+import { AcceptBidModal } from "./accept-bid-modal";
 
 // ── Status helpers ──────────────────────────────────────────────────────────
 

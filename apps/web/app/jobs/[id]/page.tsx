@@ -23,7 +23,8 @@ import { connectWallet, getConnectedWalletAddress } from "@/lib/stellar";
 
 import { TransactionPipeline } from "@/components/blockchain/transaction-pipeline";
 import { MilestoneTracker } from "@/components/jobs/milestone-tracker";
-import { SubmitBidErrorBoundary, SubmitBidModal } from "@/components/jobs/submit-bid-modal";
+import { SubmitBidErrorBoundary } from "@/components/jobs/submit-bid-error-boundary";
+import { SubmitBidModal } from "@/components/jobs/submit-bid-modal";
 import { useAcceptBid } from "@/hooks/use-accept-bid";
 
 

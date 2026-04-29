@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, type Bid, type Job } from "@/lib/api";
-import { AcceptBidModal } from "./accept-bid-modal";
+import { AcceptBidModal } from "./submit-bid-modal";
 import { toast } from "sonner";
 
 interface AcceptBidFlowProps {
@@ -86,3 +86,5 @@ export function AcceptBidFlow({
     </>
   );
 }
+
+export { AcceptBidFlow };
