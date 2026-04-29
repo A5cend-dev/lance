@@ -202,7 +202,7 @@ export function BidList({
               <div className="mt-4 flex justify-end">
                 <Button
                   size="sm"
-                  onClick={() => onAccept?.(bid.id)}
+                  onClick={() => handleAcceptClick(bid.id)}
                   disabled={isAccepting || Boolean(acceptingBidId)}
                   aria-label={`Accept bid from ${shortenAddress(bid.freelancer_address)}`}
                   aria-busy={isAccepting}
