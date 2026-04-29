@@ -37,7 +37,7 @@ export function SaveJobButton({ jobId }: { jobId: string }) {
       await queryClient.cancelQueries({ queryKey: ["savedJobs", address] });
       const previousSavedJobs = queryClient.getQueryData(["savedJobs", address]);
       
-      queryClient.setQueryData(["savedJobs", address], (old: any) => [
+      queryClient.setQueryData(["savedJobs", address], (old: Array<{id: string, job_id: string, user_address: string, note?: string, created_at: string}> | undefined) => [
         ...(old || []),
         { id: "optimistic", job_id: jobId, user_address: address, note: variables.note, created_at: new Date().toISOString() }
       ]);
@@ -62,8 +62,8 @@ export function SaveJobButton({ jobId }: { jobId: string }) {
       await queryClient.cancelQueries({ queryKey: ["savedJobs", address] });
       const previousSavedJobs = queryClient.getQueryData(["savedJobs", address]);
       
-      queryClient.setQueryData(["savedJobs", address], (old: any) => 
-        (old || []).filter((j: any) => j.job_id !== jobId)
+      queryClient.setQueryData(["savedJobs", address], (old: Array<{id: string, job_id: string, user_address: string, note?: string, created_at: string}> | undefined) => 
+        (old || []).filter((j) => j.job_id !== jobId)
       );
       return { previousSavedJobs };
     },

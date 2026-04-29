@@ -53,8 +53,8 @@ describe("SaveJobButton", () => {
   };
 
   it("renders disabled button when wallet is not connected", () => {
-    (useWalletSession as any).mockReturnValue({ address: null });
-    (api.users.savedJobs as any).mockResolvedValue([]);
+    (useWalletSession as jest.Mock).mockReturnValue({ address: null });
+    (api.users.savedJobs as jest.Mock).mockResolvedValue([]);
     renderComponent();
     
     const button = screen.getByRole("button", { name: /save job/i });
@@ -62,9 +62,9 @@ describe("SaveJobButton", () => {
   });
 
   it("opens popover and saves job with note", async () => {
-    (useWalletSession as any).mockReturnValue({ address: "G123" });
-    (api.users.savedJobs as any).mockResolvedValue([]);
-    (api.jobs.save as any).mockResolvedValue({ id: "1", note: "test" });
+    (useWalletSession as jest.Mock).mockReturnValue({ address: "G123" });
+    (api.users.savedJobs as jest.Mock).mockResolvedValue([]);
+    (api.jobs.save as jest.Mock).mockResolvedValue({ id: "1", note: "test" });
 
     renderComponent();
 
@@ -102,9 +102,9 @@ describe("SaveJobButton", () => {
   });
 
   it("unsaves a job if already saved", async () => {
-    (useWalletSession as any).mockReturnValue({ address: "G123" });
-    (api.users.savedJobs as any).mockResolvedValue([{ job_id: "123" }]);
-    (api.jobs.unsave as any).mockResolvedValue({});
+    (useWalletSession as jest.Mock).mockReturnValue({ address: "G123" });
+    (api.users.savedJobs as jest.Mock).mockResolvedValue([{ job_id: "123" }]);
+    (api.jobs.unsave as jest.Mock).mockResolvedValue({});
 
     renderComponent();
 

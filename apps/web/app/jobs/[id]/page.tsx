@@ -29,6 +29,7 @@ import { connectWallet, getConnectedWalletAddress } from "@/lib/stellar";
 
 import { ActivityLogList } from "@/components/activity-log";
 import { TransactionPipeline } from "@/components/blockchain/transaction-pipeline";
+import { MilestoneTracker } from "@/components/jobs/milestone-tracker";
 import { useAcceptBid } from "@/hooks/use-accept-bid";
 
 
@@ -456,5 +457,19 @@ export default function JobDetailsPage() {
                     <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-600">
                       <FileUp className="h-4 w-4 text-amber-600" />
                       <span>{deliverableFile ? deliverableFile.name : "Upload ZIP, image, JSON, or PDF evidence"}</span>
-
-(Content truncated due to size limit. Use line ranges to read remaining content)
+                    </label>
+                  </form>
+                ) : (
+                  <div className="mt-5 text-center text-slate-500">
+                    <FileUp className="mx-auto h-8 w-8 text-slate-400" />
+                    <p className="mt-2 text-sm">Deliverables are locked during dispute resolution</p>
+                  </div>
+                )}
+              </section>
+            </div>
+          </div>
+        </section>
+      </div>
+    </SiteShell>
+  );
+}
