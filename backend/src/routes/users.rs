@@ -1,6 +1,8 @@
 use axum::{
+    extract::Extension,
     extract::{Path, State},
-    http::HeaderMap,
+    handler::Handler,
+    middleware,
     routing::get,
     Json, Router,
 };
@@ -149,14 +151,9 @@ async fn get_profile(
 async fn upsert_profile(
     State(state): State<AppState>,
     Path(address): Path<String>,
-    headers: HeaderMap,
+    Extension(actor): Extension<String>,
     Json(req): Json<UpdateProfileRequest>,
 ) -> Result<Json<PublicProfile>> {
-    let actor = headers
-        .get("x-wallet-address")
-        .and_then(|value| value.to_str().ok())
-        .unwrap_or_default();
-
     if actor != address {
         return Err(AppError::BadRequest(
             "only the wallet owner can update this profile".into(),
