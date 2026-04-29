@@ -2,27 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
-  CheckCircle2,
   FileUp,
-  Gavel,
-  LoaderCircle,
   ShieldAlert,
-  Wallet,
 } from "lucide-react";
 import { BidList } from "@/components/jobs/bid-list";
-import { MilestoneTracker } from "@/components/jobs/milestone-tracker";
-import { ShareJobButton } from "@/components/jobs/share-job-button";
-import { SubmitBidErrorBoundary } from "@/components/jobs/submit-bid-error-boundary";
-import { SubmitBidModal } from "@/components/jobs/submit-bid-modal";
+import { SaveJobButton } from "@/components/jobs/save-job-button";
 import { SiteShell } from "@/components/site-shell";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Stars } from "@/components/stars";
 import { JobDetailsSkeleton } from "@/components/ui/skeleton";
 import { useLiveJobWorkspace } from "@/hooks/use-live-job-workspace";
 import { api } from "@/lib/api";
-import { releaseFunds, openDispute, getEscrowContractId } from "@/lib/contracts";
+import { releaseFunds, getEscrowContractId } from "@/lib/contracts";
 import {
   formatDateTime,
   formatUsdc,
@@ -30,17 +21,18 @@ import {
 } from "@/lib/format";
 import { connectWallet, getConnectedWalletAddress } from "@/lib/stellar";
 
-import { ActivityLogList } from "@/components/activity-log";
 import { TransactionPipeline } from "@/components/blockchain/transaction-pipeline";
+import { MilestoneTracker } from "@/components/jobs/milestone-tracker";
+import { SubmitBidErrorBoundary } from "@/components/jobs/submit-bid-error-boundary";
+import { SubmitBidModal } from "@/components/jobs/submit-bid-modal";
 import { useAcceptBid } from "@/hooks/use-accept-bid";
 
 
 export default function JobDetailsPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
 
   const workspace = useLiveJobWorkspace(id);
-  const { accept, transaction: acceptTransaction } = useAcceptBid();
+  const { transaction: acceptTransaction } = useAcceptBid();
 
   // useLiveJobWorkspace provides data and a `refresh()` helper
   const [viewerAddress, setViewerAddress] = useState<string | null>(null);
@@ -124,45 +116,6 @@ export default function JobDetailsPage() {
     }
   }
 
-  async function handleReleaseFunds() {
-    if (!workspace.job) return;
-    const nextMilestone = workspace.milestones.find(
-      (milestone) => milestone.status === "pending",
-    );
-    if (!nextMilestone) return;
-
-    setBusyAction("release");
-
-    try {
-      await releaseFunds(
-        BigInt(workspace.job.on_chain_job_id ?? 0),
-        Math.max(0, nextMilestone.index - 1),
-      );
-      await api.jobs.releaseMilestone(id, nextMilestone.id);
-      await workspace.refresh();
-    } catch {
-      alert("Failed to release milestone");
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
-  async function handleOpenDispute() {
-    if (!workspace.job) return;
-    setBusyAction("dispute");
-
-    try {
-      const actor = (await ensureViewerAddress()) ?? workspace.job.client_address;
-      await openDispute(BigInt(workspace.job.on_chain_job_id ?? 0));
-      const dispute = await api.jobs.dispute.open(id, { opened_by: actor });
-      router.push(`/jobs/${id}/dispute?disputeId=${dispute.id}`);
-    } catch {
-      alert("Failed to open dispute");
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
   if (workspace.loading && !workspace.job) {
     return (
       <SiteShell
@@ -190,9 +143,6 @@ export default function JobDetailsPage() {
   }
 
   const job = workspace.job;
-  const nextMilestone = workspace.milestones.find(
-    (milestone) => milestone.status === "pending",
-  );
   const viewerBid = viewerAddress
     ? workspace.bids.find(
         (bid) =>
@@ -225,7 +175,9 @@ export default function JobDetailsPage() {
                   <span className="rounded-full bg-slate-950 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-white">
                     {job.status}
                   </span>
-                  <ShareJobButton path={`/jobs/${id}`} title={job.title} />
+                  <div className="ml-auto">
+                    <SaveJobButton jobId={job.id} />
+                  </div>
                 </div>
                 <p className="mt-4 text-sm leading-7 text-slate-600">
                   {job.description}
