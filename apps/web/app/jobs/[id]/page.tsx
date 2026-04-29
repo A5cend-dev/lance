@@ -61,26 +61,7 @@ export default function JobDetailsPage() {
     return connected;
   }
 
-  async function handleBid(event: React.FormEvent) {
-    event.preventDefault();
-    setBusyAction("bid");
-
-    try {
-      const freelancerAddress =
-        (await getConnectedWalletAddress()) ?? "GD...FREELANCER";
-      await api.bids.create(id, {
-        freelancer_address: freelancerAddress,
-        proposal: proposal || "",
-      });
-      setProposal("");
-      await workspace.refresh();
-    } catch {
-      alert("Failed to submit bid");
-    } finally {
-      setBusyAction(null);
-    }
-  }
-
+  
 
 
   async function handleSubmitDeliverable(event: React.FormEvent) {

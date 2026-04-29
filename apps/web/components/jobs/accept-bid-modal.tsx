@@ -42,7 +42,7 @@ export function AcceptBidModal({
               Accept Freelancer Bid
             </h2>
             <p id="accept-bid-description" className="mt-2 text-sm text-zinc-400">
-              Review the freelancer's proposal and accept their bid to start the contract.
+              Review the freelancer&apos;s proposal and accept their bid to start the contract.
             </p>
           </div>
           <button
