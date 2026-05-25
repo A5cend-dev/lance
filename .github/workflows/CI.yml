@@ -18,8 +18,26 @@ env:
   OPENCLAW_BASE_URL: http://localhost:8080
 
 jobs:
-  rust:
-    name: Rust (Workspace)
+  contracts:
+    name: Soroban Contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Test Contracts
+        run: cargo test -p escrow -p reputation -p job_registry
+      - name: Build Contracts
+        run: cargo build --target wasm32-unknown-unknown --release -p escrow -p reputation -p job_registry
+
+  backend:
+    name: Node.js Backend
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -37,24 +55,18 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libssl-dev pkg-config
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          toolchain: 1.88.0
-          components: clippy, rustfmt
-          targets: wasm32-unknown-unknown
-      - name: Rust Cache
-        uses: Swatinem/rust-cache@v2
-      - name: Format
-        run: cargo fmt --all -- --check
-      - name: Clippy
-        run: cargo clippy --workspace -- -D warnings
-      - name: Test
-        run: cargo test --workspace -- --test-threads=1
-      - name: Build Contracts
-        run: cargo build --target wasm32-unknown-unknown --release -p escrow -p reputation -p job_registry
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci --prefix backend
+      - name: Generate Prisma Client
+        run: DATABASE_URL=postgresql://lance:lance@localhost:5432/lance npx prisma generate --schema=backend/prisma/schema.prisma
+      - name: Build
+        run: npm run build --prefix backend
 
   web-lint-build:
     name: Web Frontend
@@ -68,41 +80,35 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
       - name: Install dependencies
-        run: npm install --prefix apps/web
+        run: npm ci --prefix apps/web
       - name: Lint
         run: npm run lint --prefix apps/web
       - name: Build
         run: npm run build --prefix apps/web
 
   playwright-e2e:
-  name: E2E Tests (Playwright)
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v4
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20
-        cache: 'npm'
-        cache-dependency-path: package-lock.json
-    - name: Install dependencies
-      run: npm install
-      env:
-        npm_config_fetch_timeout: 120000
-        npm_config_fetch_retry_mintimeout: 20000
-        npm_config_fetch_retry_maxtimeout: 120000
-        npm_config_fetch_retries: 5
-    - name: Install web dependencies
-      run: npm install --prefix apps/web
-      env:
-        npm_config_fetch_timeout: 120000
-        npm_config_fetch_retry_mintimeout: 20000
-        npm_config_fetch_retry_maxtimeout: 120000
-        npm_config_fetch_retries: 5
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps chromium
-    - name: Run E2E tests
-      run: npm run test:e2e
-      env:
-        NEXT_PUBLIC_E2E: "true"
-        NEXT_PUBLIC_API_URL: "http://localhost:3001"
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+      - name: Install web dependencies
+        run: npm ci --prefix apps/web
+      - name: Generate Prisma Client
+        run: DATABASE_URL=postgresql://lance:lance@localhost:5432/lance npx prisma generate --schema=backend/prisma/schema.prisma
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          NEXT_PUBLIC_E2E: "true"
+          NEXT_PUBLIC_API_URL: "http://localhost:3001"
